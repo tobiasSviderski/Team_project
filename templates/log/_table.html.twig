@@ -1,0 +1,36 @@
+<div class="item">
+    <table
+            data-virtual-scroll="true"
+            data-toggle="table"
+            data-search="true"
+            data-show-columns="true">
+        <thead>
+        <tr>
+            <th>Id</th>
+            <th>Type</th>
+            <th>Profile</th>
+            <th>Author</th>
+            <th>Created</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for log in logs %}
+            <tr>
+                <td>{{ log.id }}</td>
+                <td>{{ log.type }}</td>
+                <td>{{ log.profile }}</td>
+                <td>{{ log.author }}</td>
+                <td>{{ log.created ? user.created|ago : 'just now' }}</td>
+                <td>
+                    <a href="{{ path('log_show', {'id': log.id}) }}">show</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="7">no records found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>

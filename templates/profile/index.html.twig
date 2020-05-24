@@ -5,39 +5,62 @@
 {% block body %}
     <h1>Profile index</h1>
 
-    <table class="table">
-        <thead>
+    <div class="item">
+        <div class="toolbar">
+            <div class="form-inline" role="form">
+{#                <div class="form-group">#}
+{#                    <button href="{{ path('profile_new') }}" class="form-control w70 btn btn-square">New profile</button>#}
+{#                </div>#}
+                <div class="form-group">
+                    <a href="{{ path('profile_new') }}" class="form-control w70 btn btn-square">New profile</a>
+                </div>
+            </div>
+        </div>
+        <table
+                data-toolbar=".toolbar"
+                data-virtual-scroll="true"
+                data-search="true"
+                data-toggle="table"
+                data-show-columns="true"
+                detailView: true
+        >
+            <thead>
             <tr>
                 <th>Id</th>
                 <th>Title</th>
                 <th>Created</th>
                 <th>File</th>
                 <th>Enable</th>
-                <th>ForAll</th>
-                <th>actions</th>
+                <th>Available&nbsp;for&nbsp;all</th>
+                <th>Actions</th>
             </tr>
-        </thead>
-        <tbody>
-        {% for profile in profiles %}
-            <tr>
-                <td>{{ profile.id }}</td>
-                <td>{{ profile.title }}</td>
-                <td>{{ profile.created ? profile.created|date('Y-m-d H:i:s') : '' }}</td>
-                <td>{{ profile.file }}</td>
-                <td>{{ profile.enable ? 'Yes' : 'No' }}</td>
-                <td>{{ profile.forAll ? 'Yes' : 'No' }}</td>
-                <td>
-                    <a href="{{ path('profile_show', {'id': profile.id}) }}">show</a>
-                    <a href="{{ path('profile_edit', {'id': profile.id}) }}">edit</a>
-                </td>
-            </tr>
-        {% else %}
-            <tr>
-                <td colspan="7">no records found</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+            {% for profile in profiles %}
+                <tr>
+                    <td>{{ profile.id }}</td>
+                    <td>{{ profile.title }}</td>
+                    <td>{{ profile.created ? profile.created|ago : 'just now' }}</td>
+                    <td>{{ profile.file }}</td>
+                    <td>{{ profile.enable ? 'Yes' : 'No' }}</td>
+                    <td>{{ profile.forAll ? 'Yes' : 'No' }}</td>
+                    <td>
+                        <a class="links" href="{{ path('profile_show', {'id': profile.id}) }}">
+                            show
+                        </a>
+                        <a class="links" href="{{ path('profile_edit', {'id': profile.id}) }}">
+                            edit
+                        </a>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="7">no records found</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
 
-    <a href="{{ path('profile_new') }}">Create new</a>
+
 {% endblock %}

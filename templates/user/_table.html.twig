@@ -1,0 +1,42 @@
+<div class="toolbar_user pt-5">
+    <button href="{{ path('user_new') }}" class="btn btn-square">New user</button>
+</div>
+
+<div class="item">
+    <table
+            data-toolbar=".toolbar_user"
+            data-virtual-scroll="true"
+            data-toggle="table"
+            data-search="true"
+            data-show-columns="true">
+        <thead>
+        <tr>
+            <th>Id</th>
+            <th>Username</th>
+            <th>Roles</th>
+            <th>Enabled</th>
+            <th>Created</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for user in users %}
+            <tr>
+                <td>{{ user.id }}</td>
+                <td>{{ user.username }}</td>
+                <td>{{ user.roles ? user.roles|json_encode : '' }}</td>
+                <td>{{ user.enabled ? 'Yes' : 'No' }}</td>
+                <td>{{ user.created ? user.created|ago : 'just now' }}</td>
+                <td>
+                    <a href="{{ path('user_show', {'id': user.id}) }}">show</a>
+                    <a href="{{ path('user_edit', {'id': user.id}) }}">edit</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="7">no records found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>

@@ -168,6 +168,12 @@ class Profile
         return $this;
     }
 
+    public function resetSubscriber(): self
+    {
+        $this->subscribers = new ArrayCollection();
+        return $this;
+    }
+
     /**
      * @return Collection|Log[]
      */

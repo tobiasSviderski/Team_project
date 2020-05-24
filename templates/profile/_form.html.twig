@@ -1,4 +1,44 @@
-{{ form_start(form) }}
-    {{ form_widget(form) }}
-    <button class="btn">{{ button_label|default('Save') }}</button>
+{{ form_start(form, {'attr': {'class': 'border border-light p-5'}}) }}
+    <p class="h4 mb-4 text-center">Create new Profile</p>
+
+    {{ form_widget(form.title, { 'attr': {'class': 'form-control mb-4', 'placeholder': 'Title'}}) }}
+
+    <div class="input-group mb-4">
+        <div class="input-group-prepend">
+            <span class="input-group-text">Upload</span>
+        </div>
+        <div class="custom-file">
+            {{ form_widget(form.file, { 'attr': {'class': 'custom-file-inpu', 'aria-describedly': 'fileInput'}}) }}
+        </div>
+    </div>
+
+<small id="helper" class="form-text text-muted mb-4">Default helper block</small>
+
+<div class="custom-control custom-checkbox mb-4">
+    {{ form_label(form.forAll, {'attr': {'class': 'custom-control-label'}}) }}
+    {{ form_widget(form.forAll) }}
+</div>
+
+<div class="custom-control custom-checkbox mb-4">
+    {{ form_widget(form.enable) }}
+    {{ form_label(form.enable, {'attr': {'class': 'custom-control-label'}}) }}
+</div>
+
+<div class="card pb-2">
+    <div class="card-body">
+    <h5 class="card-title">
+    {{ form_label(form.subscribers) }}
+    </h5>
+    {% for subscriber in form.subscribers %}
+        {{ form_label(subscriber, {'attr': {'class': 'custom-control-label'}}) }}
+        {{ form_widget(subscriber) }}
+    {% endfor %}
+
+    </div>
+</div>
+
+<br>
+<button class="btn btn-square btn-block">{{ button_label|default('Save') }}</button>
+
 {{ form_end(form) }}
+

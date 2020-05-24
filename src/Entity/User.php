@@ -15,6 +15,13 @@ use Symfony\Component\Security\Core\User\UserInterface;
  */
 class User implements UserInterface
 {
+    const ROLE_DOWNLOADER = 'ROLE_DOWNLOADER';
+    const ROLE_UPLOADER = 'ROLE_UPLOADER';
+    const ROLE_ADMIN= 'ROLE_ADMIN';
+
+    const DEFAULT_ROLES = [self::ROLE_DOWNLOADER];
+
+
     /**
      * @ORM\Id()
      * @ORM\GeneratedValue()
@@ -68,6 +75,7 @@ class User implements UserInterface
         $this->profiles = new ArrayCollection();
         $this->subscribers = new ArrayCollection();
         $this->logs = new ArrayCollection();
+        $this->roles = self::DEFAULT_ROLES;
     }
 
     public function getId(): ?int
@@ -97,11 +105,7 @@ class User implements UserInterface
      */
     public function getRoles(): array
     {
-        $roles = $this->roles;
-        // guarantee every user at least has ROLE_USER
-        $roles[] = 'ROLE_USER';
-
-        return array_unique($roles);
+        return $this->roles;
     }
 
     public function setRoles(array $roles): self
@@ -255,5 +259,10 @@ class User implements UserInterface
         $this->created = $created;
 
         return $this;
+    }
+
+    public function __toString()
+    {
+       return $this->username;
     }
 }

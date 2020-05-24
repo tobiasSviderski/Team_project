@@ -2,41 +2,139 @@
 
 {% block title %}Profile{% endblock %}
 
-{% block body %}
-    <h1>Profile</h1>
+{% block stylesheets %}
+    <style>
+        #profile_show_table{
+            float: left;
+        }
 
-    <table class="table">
+        #profile_show_table_subscribers{
+            float: left;
+        }
+    </style>
+
+
+{% endblock %}
+
+{% block body %}
+    <h1 class="pt-5 pb-5">Profile</h1>
+
+    <div class="w-50 p-3" id="profile_show_table">
+        <div class="item">
+            <div class="toolbar pb-3">
+                <div class="form-inline" role="form">
+                    <div class="form-group">
+                        <a href="{{ path('profile_index') }}" class="form-control w70 btn btn-square">Back to list</a>
+                    </div>
+                    <div class="form-group">
+                        <a href="{{ path('profile_edit', {'id': profile.id}) }}" class="form-control w70 btn btn-square">Edit</a>
+                    </div>
+                    <div class="form-group">
+                        {{ include('profile/_delete_form.html.twig') }}
+                    </div>
+                    <div class="form-group">
+                        <a target="_blank" href="{{ path('profile_download', {'id': profile.id}) }}" class="form-control w70 btn btn-square">Download</a>
+                    </div>
+                    <div class="form-group">
+                        <button type="button" class="form-control w70 btn btn-square" data-toggle="modal" data-target="#exampleModal">
+                            Upload
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <table
+                data-toolbar=".toolbar"
+                data-toggle="table"
+                data-show-columns="true"
+                detailView: true
+        >
+            <theard>
+                <tr>
+                    <th>Id</th>
+                    <td>{{ profile.id }}</td>
+                </tr>
+                <tr>
+                    <th>Title</th>
+                    <td>{{ profile.title }}</td>
+                </tr>
+                <tr>
+                    <th>Created</th>
+                    <td>{{ profile.created ? profile.created|ago : 'just now' }}</td>
+                </tr>
+                <tr>
+                    <th>File</th>
+                    <td>{{ profile.file }}</td>
+                </tr>
+                <tr>
+                    <th>Enable</th>
+                    <td>{{ profile.enable ? 'Yes' : 'No' }}</td>
+                </tr>
+                <tr>
+                    <th>ForAll</th>
+                    <td>{{ profile.forAll ? 'Yes' : 'No' }}</td>
+                </tr>
+            </theard>
+        </table>
+    </div>
+
+    <div class="w-50 p-3 pt-5 pl-5" id="profile_show_table_subscribers">
+    <table
+            data-toolbar=".toolbar"
+            data-toggle="table"
+            data-show-columns="true"
+            class="pl-5"
+    >
+        <thead>
+            <tr>
+                <th>Subscribed&nbsp;users</th>
+                <th> </th>
+            </tr>
+        </thead>
         <tbody>
+        {% if profile.subscribers|length     %}
+        {% for user in profile.subscribers  %}
             <tr>
-                <th>Id</th>
-                <td>{{ profile.id }}</td>
+                <td>{{ user.username }}</td>
+                <td><a href="{{ path('user_show', {'id': user.id}) }}" class="form-control w70 links">Display</a></td>
             </tr>
+        {% endfor %}
+        {% else %}
             <tr>
-                <th>Title</th>
-                <td>{{ profile.title }}</td>
+            <td colspan="2">This profile is shared with everyone</td>
             </tr>
-            <tr>
-                <th>Created</th>
-                <td>{{ profile.created ? profile.created|date('Y-m-d H:i:s') : '' }}</td>
-            </tr>
-            <tr>
-                <th>File</th>
-                <td>{{ profile.file }}</td>
-            </tr>
-            <tr>
-                <th>Enable</th>
-                <td>{{ profile.enable ? 'Yes' : 'No' }}</td>
-            </tr>
-            <tr>
-                <th>ForAll</th>
-                <td>{{ profile.forAll ? 'Yes' : 'No' }}</td>
-            </tr>
+        {% endif %}
         </tbody>
     </table>
+</div>
 
-    <a href="{{ path('profile_index') }}">back to list</a>
-
-    <a href="{{ path('profile_edit', {'id': profile.id}) }}">edit</a>
-
-    {{ include('profile/_delete_form.html.twig') }}
+    <!-- Modal -->
+    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Upload new profile</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form class="border border-light p-5">
+                        <div class="input-group mb-4">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">Upload</span>
+                            </div>
+                            <div class="custom-file">
+                                {{ form_widget(upload.file, { 'attr': {'class': 'custom-file-inpu', 'aria-describedly': 'fileInput'}}) }}
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary">Upload</button>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}

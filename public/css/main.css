@@ -1,0 +1,22 @@
+.btn-square{
+    border-radius: 0; !important;
+    background-color: #d80000;
+    font-weight: 4500;
+}
+
+.btn-square:click{
+    background-color: darkred;
+}
+
+.btn-square:hover{
+    background-color: whitesmoke;
+}
+
+.links{
+    color: #d80000;
+}
+
+.links:hover{
+    color: darkred;
+
+}

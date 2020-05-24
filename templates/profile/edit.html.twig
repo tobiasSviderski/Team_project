@@ -3,11 +3,80 @@
 {% block title %}Edit Profile{% endblock %}
 
 {% block body %}
-    <h1>Edit Profile</h1>
+    <div class="container p-3 pt-5">
+        <div class="row">
+            <div class="col-xs-6">
+                {{ form_start(form, {'attr': {'class': 'border border-light p-5'}}) }}
+                <p class="h4 mb-4 text-center">Edit Profile</p>
 
-    {{ include('profile/_form.html.twig', {'button_label': 'Update'}) }}
+                {{ form_widget(form.title, { 'attr': {'class': 'form-control mb-4', 'placeholder': 'Title'}}) }}
 
-    <a href="{{ path('profile_index') }}">back to list</a>
+                <div class="custom-control custom-checkbox mb-4">
+                    {{ form_label(form.forAll, {'attr': {'class': 'custom-control-label'}}) }}
+                    {{ form_widget(form.forAll) }}
+                </div>
 
-    {{ include('profile/_delete_form.html.twig') }}
+                <div class="custom-control custom-checkbox mb-4">
+                    {{ form_widget(form.enable) }}
+                    {{ form_label(form.enable, {'attr': {'class': 'custom-control-label'}}) }}
+                </div>
+            </div>
+            <div class="col-xs-6 center-block pl-3 pt-4">
+                <div class="container" id="subscribers-area">
+                    <fildset class="form-group">
+                        <legend class="col-form-label">Subscribers</legend>
+                        <div id="profile-edit-subscribers">
+                            {% for user in users  %}
+                                <div class="form-check">
+                                    <input type="checkbox" name="subscribers[{{ user.id }}]" id="profile_edit_subscribers_{{ user.id }}"
+                                           class="form-check-input"
+                                           value="{{ user.id }}"
+                                            {% if user in profile.subscribers %}
+                                                checked
+                                            {% endif %}
+                                    >
+                                    <label for="profile_edit_subscribers_{{ user.id }}" class="form-check-label">{{ user.username }}</label>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </fildset>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <br>
+            <button class="btn btn-square btn-block">{{ button_label|default('Save') }}</button>
+            <a href="{{ path('profile_index') }}" class="btn btn-square btn-block">Back to list</a>
+
+        </div>
+        {{ form_end(form) }}
+
+    </div>
+
+
+{% endblock %}
+
+{% block javascripts %}
+    <script>
+        $( document ).ready(() => {
+            //od default hide the subscriber section
+            // everytime user uncheck the availibility or the profile for all then display the option
+            // otherwise hide it
+            $('#profile_new_forAll').click(() => {
+                if($("#profile_new_forAll").is(':checked'))
+                {
+                    $('div#subscribers-area').find('input[type=checkbox]:checked').prop('checked', false); // Unchecks it
+                }
+            });
+
+            $('#subscribers-area input[type=checkbox]').change(function() { // while you're at it listen for change rather than click, this is in case something else modifies the checkbox
+                if ($("#subscribers-area input:checkbox:checked").length > 0) {
+                    $('#profile_new_forAll').prop('checked', false);
+                } else {
+                    $('#profile_new_forAll').prop('checked', true);
+                }
+            });
+
+        });
+    </script>
 {% endblock %}
