@@ -110,11 +110,29 @@ class ProfileController extends AbstractController
      */
     public function show(Request $request, Profile $profile): Response
     {
-        $form = $this->createForm(ProfileUploadType::class, $profile);
+        $form = $this->createForm(ProfileUploadType::class);
         $form->handleRequest($request);
+        $profileFile = $form['file']->getData();
 
-        if ($form->isSubmitted() && $form->isValid()) {
+        // If file exists
+        if($profileFile) {
+            // Get file name and titile if any
+            $originalFileName = pathinfo($profileFile->getClientOriginalName(), PATHINFO_FILENAME);
+            $inputedTitle = $form->get('title')->getData();
 
+            // Moving the file
+            try {
+                // Unlink the old file
+                unlink($this->getParameter('profile_directory') . $profile->getFile());
+
+                // Move the new one
+                $profileFile->move(
+                    $this->getParameter('profile_directory'),
+                    $profile->getFile()
+                );
+            } catch (FileException $e){
+                #TODO handle file excption
+            }
         }
 
         return $this->render('profile/show.html.twig', [
@@ -182,6 +200,9 @@ class ProfileController extends AbstractController
     public function delete(Request $request, Profile $profile): Response
     {
         if ($this->isCsrfTokenValid('delete'.$profile->getId(), $request->request->get('_token'))) {
+
+            unlink($this->getParameter('profile_directory') . $profile->getFile());
+
             $entityManager = $this->getDoctrine()->getManager();
             $entityManager->remove($profile);
             $entityManager->flush();
