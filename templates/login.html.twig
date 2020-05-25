@@ -3,26 +3,67 @@
 {% block title %}Log in!{% endblock %}
 
 {% block body %}
-    <form class="border border-light p-5" method="post">
-        {% if error %}
-            <div class="alert alert-danger">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
-        {% endif %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-6">
+            <form class="border border-light p-5" method="post">
+            {% if error %}
+                <div class="alert alert-danger">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
+            {% endif %}
 
-        {% if app.user %}
-            <div class="mb-3">
-                You are logged in as {{ app.user.username }}, <a href="{{ path('app_logout') }}">Logout</a>
+            <p class="h4 mb-4 text-center">Sign in</p>
+
+
+            <div class="form-group">
+                <div class="input-group">
+                    <input type="text" value="{{ last_username }}" name="username" id="inputUsername" class="form-control" placeholder="Username" autofocus>
+                </div>
             </div>
-        {% endif %}
 
+            <div class="form-group">
+                <div class="input-group" id="show_hide_password">
+                    <input class="form-control password_input_old" name="password"  id="defaultLoginFormPassword" type="password" placeholder="Password">
+                    <label for="seeOldPassword" id="password_label_old" class="btn password_label">
+                        <i class="fa fa-eye" id="password_icon_old"  aria-hidden="true"></i>
+                    </label>
+                    <input type="checkbox" id="seeOldPassword" class="password_checkbox" style="display:none">
+                </div>
+            </div>
 
-        <p class="h4 mb-4 text-center">Sign in</p>
-        <input type="text" value="{{ last_username }}" name="username" id="inputUsername" class="form-control mb-4" placeholder="Username" autofocus>
-        <input type="password" name="password" id="inputPassword" class="form-control mb-4" required placeholder="Password">
+            <button class="btn btn-square btn-block my-4" type="submit">Sign in</button>
+            <input type="hidden" name="_csrf_token"
+                value="{{ csrf_token('authenticate') }}"
+            >
+            </form>
+        </div>
+    </div>
+</div>
 
+{% endblock %}
 
-        <input type="hidden" name="_csrf_token"
-               value="{{ csrf_token('authenticate') }}"
-        >
-        <button class="btn btn-info btn-block btn-square my-4" type="submit">Sign in</button>
-    </form>
+{% block javascripts %}
+<script>
+    $(document).ready(function(){
+        // $('.alert').alert('close')
+
+        $('#seeOldPassword').click(function(){
+            if($('#seeOldPassword').is(':checked')) {
+                $('.password_input_old').attr('type', 'text');
+                $('#password_icon_old').removeClass("fa-eye");
+                $('#password_icon_old').addClass("fa-eye-slash");
+
+                $('#password_label_old').addClass('password_label_checked');
+                $('#password_label_old').removeClass('password_label');
+            }
+            else {
+                $('.password_input_old').attr('type', 'password');
+                $('#password_icon_old').removeClass( "fa-eye-slash" );
+                $('#password_icon_old').addClass( "fa-eye" );
+
+                $('#password_label_old').addClass('password_label');
+                $('#password_label_old').removeClass('password_label_checked');
+            }
+        });
+    });
+</script>
 {% endblock %}

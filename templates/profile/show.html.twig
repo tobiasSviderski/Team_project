@@ -17,9 +17,9 @@
 {% endblock %}
 
 {% block body %}
-    <h1 class="pt-5 pb-5">Profile</h1>
+    <h1 class="pb-3 pb-2">Profile</h1>
 
-    <div class="w-50 p-3" id="profile_show_table">
+    <div class="w-50" id="profile_show_table">
         <div class="item">
             <div class="toolbar pb-3">
                 <div class="form-inline" role="form">
@@ -40,6 +40,11 @@
                             Upload
                         </button>
                     </div>
+                    <div class="form-group">
+                        <button type="button" class="form-control w70 btn btn-square" data-toggle="modal" data-target="#logsModal">
+                            Logs
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -47,9 +52,8 @@
                 data-toolbar=".toolbar"
                 data-toggle="table"
                 data-show-columns="true"
-                detailView: true
         >
-            <theard>
+            <thead>
                 <tr>
                     <th>Id</th>
                     <td>{{ profile.id }}</td>
@@ -63,18 +67,36 @@
                     <td>{{ profile.created ? profile.created|ago : 'just now' }}</td>
                 </tr>
                 <tr>
-                    <th>File</th>
-                    <td>{{ profile.file }}</td>
+                    <th>Author</th>
+                    <td><a href="{{ path('user_show', {'id' : profile.author.id}) }}" class="links">{{ profile.author.username }}</a></td>
                 </tr>
                 <tr>
                     <th>Enable</th>
                     <td>{{ profile.enable ? 'Yes' : 'No' }}</td>
                 </tr>
-                <tr>
-                    <th>ForAll</th>
-                    <td>{{ profile.forAll ? 'Yes' : 'No' }}</td>
-                </tr>
-            </theard>
+                {% if profile.file %}
+                    <tr>
+                        <th>File id</th>
+                        <td>{{ profile.file.id }}</td>
+                    </tr>
+                    <tr>
+                        <th>File name</th>
+                        <td>{{ profile.file.filename }}</td>
+                    </tr>
+                    <tr>
+                        <th>File extention</th>
+                        <td>{{ profile.file.extention }}</td>
+                    </tr>
+                    <tr>
+                        <th>File version</th>
+                        <td>{{ profile.file.version }}</td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="2">This profile has no file yet</td>
+                    </tr>
+                {% endif %}
+            </thead>
         </table>
     </div>
 
@@ -92,23 +114,21 @@
             </tr>
         </thead>
         <tbody>
-        {% if profile.subscribers|length     %}
-        {% for user in profile.subscribers  %}
+        {% for subscription in subscriptions  %}
             <tr>
-                <td>{{ user.username }}</td>
-                <td><a href="{{ path('user_show', {'id': user.id}) }}" class="form-control w70 links">Display</a></td>
+                <td>{{ subscription.user.username }}</td>
+                <td><a href="{{ path('user_show', {'id': subscription.user.id}) }}" class="form-control w70 links">Display</a></td>
             </tr>
-        {% endfor %}
         {% else %}
             <tr>
-            <td colspan="2">This profile is shared with everyone</td>
+                <td colspan="2">This profile is shared with everyone</td>
             </tr>
-        {% endif %}
+        {% endfor %}
         </tbody>
     </table>
 </div>
 
-    <!-- Modal -->
+    <!-- Modal upload new profile-->
     <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
@@ -118,8 +138,8 @@
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
+                {{ form_start(upload, {'attr': {'class': 'border border-light p-5'}}) }}
                 <div class="modal-body">
-                    <form class="border border-light p-5">
                         <div class="input-group mb-4">
                             <div class="input-group-prepend">
                                 <span class="input-group-text">Upload</span>
@@ -128,14 +148,74 @@
                                 {{ form_widget(upload.file, { 'attr': {'class': 'custom-file-inpu', 'aria-describedly': 'fileInput'}}) }}
                             </div>
                         </div>
-                    </form>
                 </div>
                 <div class="modal-footer">
+                    {{ form_widget(upload.attemptToSave, { 'attr': {'class': 'btn btn-primary' }} ) }}
+                    {{ form_widget(upload.save, { 'attr': {'class': 'btn btn-primary' }} ) }}
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary">Upload</button>
+                </div>
+                {{ form_end(upload) }}
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Modal show logs -->
+    <div id="logsModal" class="modal fade" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Logs</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <table id="table-modal"
+                           data-toggle="table"
+                           data-show-columns="true"
+                           data-virtual-scroll="true"
+                           data-search="true"
+                           >
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Profile</th>
+                                <th>Author</th>
+                                <th>Type</th>
+                                <th>Created</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for log in profile.logs  %}
+                                <tr>
+                                    <td>{{ log.id }}</td>
+                                    <td><a href="{{ path('profile_show', ['id' => log.profile.id])}}" class="links">{{ log.profile.title }}</a></td>
+                                    <td><a href="{{ path('user_show', ['id' => log.author.id])}}" class="links">{{ log.author.username }}</a></td>
+                                    <td>{{ log.type }}</td>
+                                    <td>{{ log.created|ago }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-square" data-dismiss="modal">Close</button>
                 </div>
             </div>
         </div>
     </div>
-    {{ include('profile/_delete_form.html.twig') }}
+{% endblock %}
+
+
+{% block javascripts %}
+    <script>
+        var $table = $('#table-modal')
+
+        $(function() {
+            $('#logsModal').on('shown.bs.modal', function () {
+                $table.bootstrapTable('resetView');
+            });
+        });
+    </script>
 {% endblock %}

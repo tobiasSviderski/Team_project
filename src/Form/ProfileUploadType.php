@@ -2,9 +2,9 @@
 
 namespace App\Form;
 
-use App\Entity\Profile;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
+use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
@@ -25,6 +25,13 @@ class ProfileUploadType extends AbstractType
 //                        'mimeTypesMessage' => 'Please upload a valid JSON document',
 //                    ])
 //                ]
+            ])
+            ->add('attemptToSave', SubmitType::class, [
+                'label' => 'Attempt to upload a file'
+            ])
+            ->add('save', SubmitType::class, [
+                'label' => 'Upload a file',
+                    'disabled' => true
             ])
         ;
     }

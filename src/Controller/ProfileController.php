@@ -2,22 +2,23 @@
 
 namespace App\Controller;
 
+use App\Entity\Log;
 use App\Entity\Profile;
+use App\Entity\Subscription;
 use App\Form\ProfileEditType;
 use App\Form\ProfileNewType;
 use App\Form\ProfileUploadType;
-use App\Form\ProfileCreateType;
 use App\Repository\ProfileRepository;
+use App\Repository\SubscriptionRepository;
 use App\Repository\UserRepository;
 use App\Security\FileNotExistsException;
 use App\Security\FileNotMoveableException;
 use App\Service\ProfileCreateService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\String\Slugger\SluggerInterface;
 
 class ProfileController extends AbstractController
 {
@@ -77,39 +78,68 @@ class ProfileController extends AbstractController
     /**
      * @Route("/profile/{id}", name="profile_show", methods={"GET", "POST"})
      */
-    public function show(Request $request, Profile $profile): Response
+    public function show(Request $request, Profile $profile, SubscriptionRepository $subscriptionRepository): Response
     {
         $form = $this->createForm(ProfileUploadType::class);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            dump($form->getData());
+            die();
 
-            $profileFile = $form['file']->getData();
 
-            // If file exists
-            if ($profileFile) {
-                // Get file name and titile if any
-                $originalFileName = pathinfo($profileFile->getClientOriginalName(), PATHINFO_FILENAME);
-                $inputedTitle = $form->get('title')->getData();
+            if($form->getClickedButton() && 'attemptToSave' === $form->getClickedButton()->getName()) {
+                // Get the file from the profile object
+                $file = $profile->getFile();
 
-                // Moving the file
-                try {
-                    // Unlink the old file
-                    unlink($this->getParameter('profile_directory') . $profile->getFile());
-
-                    // Move the new one
-                    $profileFile->move(
-                        $this->getParameter('profile_directory'),
-                        $profile->getFile()
-                    );
-                } catch (FileException $e) {
-                    #TODO handle file excption
+                // Check if somebody else could alreay have dibs on the file
+                if ($file->getAttemptToChangeBy() === null) {
+                    $this->addFlash("Error", "Somebody else made their changes and presaved this file");
+                } else {
+                    $file->setAttemptToChangeBy($this->getUser());
+                    $form->add('attemptToSave', SubmitType::class, [
+                        'label' => 'Attempt to upload a file',
+                        'disabled' => true
+                    ]);
+                    $form->add('save', SubmitType::class, [
+                        'label' => 'Attempt to upload a file'
+                    ]);
                 }
+
             }
+
+            if($form->getClickedButton() && 'save' === $form->getClickedButton()->getName()) {
+
+            }
+
+//            $profileFile = $form['file']->getData();
+//
+//            // If file exists
+//            if ($profileFile) {
+//
+//                // Get file name and titile if any
+//                $originalFileName = pathinfo($profileFile->getClientOriginalName(), PATHINFO_FILENAME);
+//                $inputedTitle = $form->get('title')->getData();
+//
+//                // Moving the file
+//                try {
+//                    // Unlink the old file
+//                    unlink($this->getParameter('profile_directory') . $profile->getFile());
+//
+//                    // Move the new one
+//                    $profileFile->move(
+//                        $this->getParameter('profile_directory'),
+//                        $profile->getFile()
+//                    );
+//                } catch (FileException $e) {
+//                    #TODO handle file excption
+//                }
+//            }
         }
 
         return $this->render('profile/show.html.twig', [
             'profile' => $profile,
+            'subscriptions' => $subscriptionRepository->findBy(['profile' => $profile]),
             'upload' => $form->createView()
         ]);
     }
@@ -117,53 +147,76 @@ class ProfileController extends AbstractController
     /**
      * @Route("/profile/{id}/edit", name="profile_edit", methods={"GET","POST"})
      */
-    public function edit(Request $request, Profile $profile, UserRepository $userRepository): Response
+    public function edit(
+        Request $request,
+        Profile $profile,
+        UserRepository $userRepository,
+        SubscriptionRepository $subscriptionRepository
+    ): Response
     {
         $form = $this->createForm(ProfileEditType::class, $profile);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $this->getDoctrine()->getManager()->flush();
+            // Save into database
+            $entityManager = $this->getDoctrine()->getManager();
 
-            if ($profile->getForAll())
-            {
-                $profile->resetSubscriber();
-            }else {
+            $entityManager->persist($profile);
                 // Reset subscriber list
                 $editedSubscribers =  $request->request->get('subscribers');
                 if (empty($editedSubscribers)){
                     $profile->setForAll(true);
-                    $profile->resetSubscriber();
-                } else {
-                    $profile->resetSubscriber();
+                    $profile->eraseSubscription();
+                }
+                else {
+                    $profile->eraseSubscription();
                     foreach ($editedSubscribers as $newSub){
-                        $profile->addSubscriber($userRepository->find($newSub));
+                        $sub = new Subscription();
+                        $sub->setProfile($profile);
+                        $sub->setUser($userRepository->find($newSub));
+                        $entityManager->persist($sub);
                     }
                 }
+
+                $log = new Log();
+                $log->setProfile($profile);
+                $log->setAuthor($this->getUser());
+                $log->setType(Log::TYPE_EDIT);
+                $log->setCreated(new \DateTime());
+                $entityManager->persist($log);
+                $this->addFlash("success", "Profile information were changed");
+
+                $entityManager->persist($profile);
+                $entityManager->flush();
+                return $this->redirectToRoute('profile_show', ['id' => $profile->getId()]);
             }
 
-            // Save into database
-            $entityManager = $this->getDoctrine()->getManager();
-            $entityManager->persist($profile);
-            $entityManager->flush();
-
-            return $this->redirectToRoute('profile_show', ['id' => $profile->getId()]);
+            return $this->render('profile/edit.html.twig', [
+                'profile' => $profile,
+                'users' => $userRepository->findAll(),
+                'subscriptions' => $subscriptionRepository->findBy(['profile' => $profile]),
+                'form' => $form->createView(),
+            ]);
         }
 
-        return $this->render('profile/edit.html.twig', [
-            'profile' => $profile,
-            'users' => $userRepository->findAll(),
-            'form' => $form->createView(),
-        ]);
-    }
 
     /**
      * @Route("/profile/{id}/download", name="profile_download")
      */
     public function download(Profile $profile){
         $title = $profile->getTitle();
-        $path = $profile->getFile();
-        return $this->file( $this->getParameter('profile_directory') . $path, $title);
+        $file = $profile->getFile();
+
+        $log = new Log();
+        $log->setProfile($profile);
+        $log->setAuthor($this->getUser());
+        $log->setCreated(new \DateTime());
+        $log->setType(Log::TYPE_DOWNLOAD);
+        $entityManager = $this->getDoctrine()->getManager();
+        $entityManager->persist($log);
+        $entityManager->flush();
+
+        return $this->file( $this->getParameter('profile_directory') . $file->getFilename()  , $title . '.' . $file->getExtention());
         //return $this->file($pdfPath, 'sample-of-my-book.pdf');
     }
 
@@ -173,14 +226,40 @@ class ProfileController extends AbstractController
     public function delete(Request $request, Profile $profile): Response
     {
         if ($this->isCsrfTokenValid('delete'.$profile->getId(), $request->request->get('_token'))) {
-
-            unlink($this->getParameter('profile_directory') . $profile->getFile());
-
             $entityManager = $this->getDoctrine()->getManager();
-            $entityManager->remove($profile);
-            $entityManager->flush();
-        }
 
-        return $this->redirectToRoute('profile_index');
+            // Removing action
+            try {
+                // Remove the file in the folder system
+                $file = $profile->getFile();
+                unlink($this->getParameter('profile_directory') . $file->getFilename());
+
+                // Remove subscription objects
+                foreach ($profile->getSubscriptions() as $subscription)
+                {
+                    $entityManager->remove($subscription);
+                }
+
+                // Remove log objects
+                foreach($profile->getLogs() as $log){
+                    $entityManager->remove($log);
+                }
+
+                // Remove file object
+                $entityManager->remove($profile->getFile());
+
+                // Remove the main profile
+                $entityManager->remove($profile);
+
+                // Finish everyting
+                $entityManager->flush();
+                $this->addFlash("success", "Profile was successfully removed");
+            } catch (\Exception $e)
+            {
+                $this->addFlash("alert", $e);
+            } finally {
+                return $this->redirectToRoute('profile_index');
+            }
+        }
     }
 }

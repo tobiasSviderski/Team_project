@@ -47,4 +47,15 @@ class SubscriptionRepository extends ServiceEntityRepository
         ;
     }
     */
+
+    public function findUsers($profile)
+    {
+//        return $this->createQueryBuilder('s')
+//            ->andWhere('s.profile = :val')
+//            ->setParameter('val', $profile)
+//            ->select('s.user')
+//            ->getQuery()
+//            ;
+
+    }
 }

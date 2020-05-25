@@ -40,7 +40,6 @@
                 data-search="true"
                 data-toggle="table"
                 data-show-columns="true"
-                detailView: true
         >
             <thead>
             <tr>
@@ -51,7 +50,6 @@
                 <th>Enable</th>
                 <th>No. of subscribers</th>
                 <th>No. of logs</th>
-                <th>Download file</th>
                 <th>Other actions</th>
             </tr>
             </thead>
@@ -61,38 +59,26 @@
                     <td>{{ profile.id }}</td>
                     <td>{{ profile.title }}</td>
                     <td>{{ profile.created ? profile.created|ago : 'just now' }}</td>
-                    <td><a href="{{ path('user_show', {'id' : profile.author.id}) }}" class="links"></a>{{ profile.author.username }}</td>
-                    <td>{{ profile.enable ? 'Yes' : 'No' }}
-                    {% if profile.subscriptions is not empty %}
-                        {{ profile.subscriptions|length }}
-                    {% else %}
-                        for everyone
-                    {% endif %}
+                    <td><a href="{{ path('user_show', {'id' : profile.author.id}) }}" class="links">{{ profile.author.username }}</a></td>
+                    <td>{{ profile.enable ? 'Yes' : 'No' }} </td>
+                    <td>
+                        {% if profile.subscriptions is not empty %}
+                            {{ profile.subscriptions|length }}
+                        {% else %}
+                            for everyone
+                        {% endif %}
                     </td>
                     <td>
-                    {% if profile.logs is not empty %}
-                        {{ profile.logs|lenght }}
-                    {% else %}
-                        No logs yet
-                    {% endif %}
+                        {% if profile.logs is not empty %}
+                            {{ profile.logs|length }}
+                        {% else %}
+                            No logs yet
+                        {% endif %}
                     </td>
                     <td>
-                        <a href="{{ path('profile_download', {'id': profile.file.id) }}" class="links" >download</a>
-                    </td>
-                    <td>
-
-                    </td>
-
-
-                    {{ profile.file.id }}
-                    <td>{{ profile.forAll ? 'Yes' : 'No' }}</td>
-                    <td>
-                        <a class="links" href="{{ path('profile_show', {'id': profile.id}) }}">
-                            show
-                        </a>
-                        <a class="links" href="{{ path('profile_edit', {'id': profile.id}) }}">
-                            edit
-                        </a>
+                        <a href="{{ path('profile_download', {'id': profile.file.id}) }}" target="_blank" class="links" >download</a>
+                        <a href="{{ path('profile_show', {'id': profile.id}) }}" class="links">show</a>
+                        <a href="{{ path('profile_edit', {'id': profile.id}) }}" class="links">edit</a>
                     </td>
                 </tr>
             {% else %}

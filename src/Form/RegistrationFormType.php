@@ -9,7 +9,6 @@ use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Validator\Constraints\IsTrue;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
 
@@ -42,8 +41,7 @@ class RegistrationFormType extends AbstractType
                 'multiple' => true,
                 'expanded' => false,
                 'choices' => [
-                    'User with downloads' => User::ROLE_DOWNLOADER,
-                    'User with uploads' => User::ROLE_UPLOADER,
+                    'User' => User::ROLE_USER,
                     'Admin' => User::ROLE_ADMIN
                 ]
             ])

@@ -196,6 +196,16 @@ class Profile
         return $this;
     }
 
+    public function eraseSubscription(): self
+    {
+        foreach($this->subscriptions as $subscription)
+        {
+            $this->removeSubscription($subscription);
+        }
+
+        return $this;
+    }
+
     public function getFile(): ?File
     {
         return $this->file;

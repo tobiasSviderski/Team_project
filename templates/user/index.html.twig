@@ -5,6 +5,9 @@
 {% block body %}
 
     <h1 class="pt-5 pb-3">User table</h1>
+
+    {{ include('flash.html.twig') }}
+
     <div class="toolbar_user">
         <a href="{{ path('app_register') }}" class="btn btn-square">New user</a>
     </div>
@@ -40,8 +43,8 @@
                     <td>{{ user.enabled ? 'Yes' : 'No' }}</td>
                     <td>{{ user.created ? user.created|ago : 'just now' }}</td>
                     <td>
-                        <a href="{{ path('user_show', {'id': user.id}) }}">show</a>
-                        <a href="{{ path('user_edit', {'id': user.id}) }}">edit</a>
+                        <a href="{{ path('user_show', {'id': user.id}) }}" class="links">show</a>
+                        <a href="{{ path('user_edit', {'id': user.id}) }}" class="links">edit</a>
                     </td>
                 </tr>
             {% else %}

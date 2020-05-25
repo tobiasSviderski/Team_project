@@ -1,0 +1,77 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Register{% endblock %}
+
+{% block body %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-6">
+            {{ form_start(registrationForm, {'attr': {'class': 'border border-light p-5'}}) }}
+                <p class="h4 mb-4 text-center">Register</p>
+
+
+                <div class="form-group">
+                    <div class="input-group">
+                        {{ form_widget(registrationForm.username, {'attr': {'class': 'form-controle'}}) }}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="input-group" id="show_hide_password">
+                        {{ form_widget(registrationForm.plainPassword, {'attr': {'class': 'form-control password_input_old'}}) }}
+
+                        <label for="seeOldPassword" id="password_label_old" class="btn password_label">
+                            <i class="fa fa-eye" id="password_icon_old"  aria-hidden="true"></i>
+                        </label>
+                        <input type="checkbox" id="seeOldPassword" class="password_checkbox" style="display:none">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="input-group">
+                        {{ form_widget(registrationForm.enabled, {'attr': {'class': 'form-controle'}}) }}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="input-group">
+                        {{ form_widget(registrationForm.roles, {'attr': {'class': 'form-controle'}}) }}
+                    </div>
+                </div>
+
+                <button class="btn btn-square btn-block my-4" type="submit">Register</button>
+                <input type="hidden" name="_csrf_token"
+                       value="{{ csrf_token('authenticate') }}"
+                >
+            {{ form_end(registrationForm) }}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+    $(document).ready(function(){
+        // $('.alert').alert('close')
+
+        $('#seeOldPassword').click(function(){
+            if($('#seeOldPassword').is(':checked')) {
+                $('.password_input_old').attr('type', 'text');
+                $('#password_icon_old').removeClass("fa-eye");
+                $('#password_icon_old').addClass("fa-eye-slash");
+
+                $('#password_label_old').addClass('password_label_checked');
+                $('#password_label_old').removeClass('password_label');
+            }
+            else {
+                $('.password_input_old').attr('type', 'password');
+                $('#password_icon_old').removeClass( "fa-eye-slash" );
+                $('#password_icon_old').addClass( "fa-eye" );
+
+                $('#password_label_old').addClass('password_label');
+                $('#password_label_old').removeClass('password_label_checked');
+            }
+        });
+    });
+</script>
+{% endblock %}

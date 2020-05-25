@@ -2,35 +2,10 @@
 
 {% block title %}User{% endblock %}
 
-{% block stylesheets %}
-    <style>
-        .password-change, .password-change:hover{
-            color:#333
-        }
-    </style>
-{% endblock %}
-
 {% block body %}
     <h1 class="pt-5">User</h1>
 
-    {% for message in app.flashes('success') %}
-{#        <div class="alert alert-danger alert-dismissible fade show" role="alert">#}
-            <strong>Alert</strong> {{ message }}
-{#            <button type="button" class="close" data-dismiss="alert" aria-label="Close">#}
-{#                <span aria-hidden="true">&times;</span>#}
-{#            </button>#}
-{#        </div>#}
-    {% endfor %}
-
-    {% for message in app.flashes('success') %}
-{#        <div class="alert alert-success alert-dismissible fade show" role="alert">#}
-            <strong>Success</strong> {{ message }}
-{#            <button type="button" class="close" data-dismiss="alert" aria-label="Close">#}
-{#                <span aria-hidden="true">&times;</span>#}
-{#            </button>#}
-{#        </div>#}
-    {% endfor %}
-
+    {{ include('flash.html.twig') }}
 
     <div class="p-3" id="profile_show_table">
         <div class="item">
@@ -59,9 +34,8 @@
                 data-toolbar=".toolbar"
                 data-toggle="table"
                 data-show-columns="true"
-                detailView: true
         >
-            <theard>
+            <thead>
                 <tr>
                     <th>Id</th>
                     <td>{{ user.id }}</td>
@@ -84,7 +58,7 @@
                     <th>Created</th>
                     <td>{{ user.created ? user.created|ago : '' }}</td>
                 </tr>
-            </theard>
+            </thead>
         </table>
     </div>
 
@@ -134,6 +108,7 @@
                 {{ form_end(passwordform) }}
             </div>
         </div>
+    </div>
     </div>
 
 

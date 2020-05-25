@@ -5,14 +5,11 @@ namespace App\Controller;
 use App\Entity\User;
 use App\Form\ChangePasswordType;
 use App\Form\UserEditType;
-use App\Form\UserNewType;
 use App\Repository\UserRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Security\Core\Encoder\PasswordEncoderInterface;
-use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 
 /**
  * @Route("/user")
@@ -93,6 +90,8 @@ class UserController extends AbstractController
             'form' => $form->createView(),
         ]);
     }
+
+
 
     /**
      * @Route("/{id}", name="user_delete", methods={"DELETE"})

@@ -20,8 +20,7 @@ class UserEditType extends AbstractType
                 'multiple' => true,
                 'expanded' => false,
                 'choices' => [
-                    'User with downloads' => User::ROLE_DOWNLOADER,
-                    'User with uploads' => User::ROLE_UPLOADER,
+                    'User' => User::ROLE_USER,
                     'Admin' => User::ROLE_ADMIN
                 ]
             ])
