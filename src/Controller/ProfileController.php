@@ -6,8 +6,12 @@ use App\Entity\Profile;
 use App\Form\ProfileEditType;
 use App\Form\ProfileNewType;
 use App\Form\ProfileUploadType;
+use App\Form\ProfileCreateType;
 use App\Repository\ProfileRepository;
 use App\Repository\UserRepository;
+use App\Security\FileNotExistsException;
+use App\Security\FileNotMoveableException;
+use App\Service\ProfileCreateService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
@@ -15,9 +19,6 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\String\Slugger\SluggerInterface;
 
-/**
- * @Route("/profile")
- */
 class ProfileController extends AbstractController
 {
     /**
@@ -31,70 +32,38 @@ class ProfileController extends AbstractController
     }
 
     /**
-     * @Route("/new", name="profile_new", methods={"GET","POST"})
+     * @Route("/profile/new", name="profile_new", methods={"GET","POST"})
      */
-    public function new(
+    public function new_profile(
         Request $request,
-        SluggerInterface $slugger,
-        UserRepository $userRepository
-    ): Response
+        ProfileCreateService $service
+    )
     {
         $profile = new Profile();
         $form = $this->createForm(ProfileNewType::class, $profile);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // Get the file
-            /** @var UploadedFile $profileFile */
-            $profileFile = $form['file']->getData();
 
-            // If file exists
-            if($profileFile){
-                // Get file name and titile if any
-                $originalFileName = pathinfo($profileFile->getClientOriginalName(), PATHINFO_FILENAME);
-                $inputedTitle = $form->get('title')->getData();
-
-                // Title
-                $profileTitle = "";
-                if (!empty($inputedTitle))
-                    $profileTitle = $inputedTitle;
-                else
-                    $profileTitle = $slugger->slug($originalFileName);
-
-                // Filename
-                $newFilename = uniqid().'.'.$profileFile->guessExtension();
-
-                // Moving the file
-                try {
-                    $profileFile->move(
-                        $this->getParameter('profile_directory'),
-                        $newFilename
-                    );
-                } catch (FileException $e){
-                    #TODO handle file excption
-                }
-
-                // Subscribers
-                if (!$profile->getForAll()) {
-                    $subscribers_info = $request->request->get('profile_new')['subscribers'];
-                    foreach ($subscribers_info as $sub){
-                        $profile->addSubscriber($userRepository->find($sub));
-                    }
-                }
-
-                // Set the other parameters
-                $profile->setCreated(new \DateTime());
-                $profile->setAuthor($this->getUser());
-                $profile->setFile($newFilename);
-                $profile->setTitle($profileTitle);
+            try {
+                $service->create(
+                    $profile,
+                    $form['file']->getData(),
+                    $form['forAll']->getData(),
+                    $form['subscriptions']->getData(),
+                    $this->getUser()
+                );
+            }
+            catch (FileNotExistsException $ex){
+                $this->addFlash("error", $ex);
+            } catch (FileNotMoveableException $ex) {
+                $this->addFlash("error", $ex);
+            } catch (\Exception $ex) {
+                $this->addFlash("error", $ex);
             }
 
-            // Save into database
-            $entityManager = $this->getDoctrine()->getManager();
-            $entityManager->persist($profile);
-            $entityManager->flush();
+            $this->addFlash("success", "Profile created");
 
-            // Go to the main page
             return $this->redirectToRoute('profile_index');
         }
 
@@ -106,32 +75,36 @@ class ProfileController extends AbstractController
     }
 
     /**
-     * @Route("/{id}", name="profile_show", methods={"GET", "POST"})
+     * @Route("/profile/{id}", name="profile_show", methods={"GET", "POST"})
      */
     public function show(Request $request, Profile $profile): Response
     {
         $form = $this->createForm(ProfileUploadType::class);
         $form->handleRequest($request);
-        $profileFile = $form['file']->getData();
 
-        // If file exists
-        if($profileFile) {
-            // Get file name and titile if any
-            $originalFileName = pathinfo($profileFile->getClientOriginalName(), PATHINFO_FILENAME);
-            $inputedTitle = $form->get('title')->getData();
+        if ($form->isSubmitted() && $form->isValid()) {
 
-            // Moving the file
-            try {
-                // Unlink the old file
-                unlink($this->getParameter('profile_directory') . $profile->getFile());
+            $profileFile = $form['file']->getData();
 
-                // Move the new one
-                $profileFile->move(
-                    $this->getParameter('profile_directory'),
-                    $profile->getFile()
-                );
-            } catch (FileException $e){
-                #TODO handle file excption
+            // If file exists
+            if ($profileFile) {
+                // Get file name and titile if any
+                $originalFileName = pathinfo($profileFile->getClientOriginalName(), PATHINFO_FILENAME);
+                $inputedTitle = $form->get('title')->getData();
+
+                // Moving the file
+                try {
+                    // Unlink the old file
+                    unlink($this->getParameter('profile_directory') . $profile->getFile());
+
+                    // Move the new one
+                    $profileFile->move(
+                        $this->getParameter('profile_directory'),
+                        $profile->getFile()
+                    );
+                } catch (FileException $e) {
+                    #TODO handle file excption
+                }
             }
         }
 
@@ -142,7 +115,7 @@ class ProfileController extends AbstractController
     }
 
     /**
-     * @Route("/{id}/edit", name="profile_edit", methods={"GET","POST"})
+     * @Route("/profile/{id}/edit", name="profile_edit", methods={"GET","POST"})
      */
     public function edit(Request $request, Profile $profile, UserRepository $userRepository): Response
     {
@@ -185,7 +158,7 @@ class ProfileController extends AbstractController
     }
 
     /**
-     * @Route("/{id}/download", name="profile_download")
+     * @Route("/profile/{id}/download", name="profile_download")
      */
     public function download(Profile $profile){
         $title = $profile->getTitle();
@@ -195,7 +168,7 @@ class ProfileController extends AbstractController
     }
 
     /**
-     * @Route("/{id}", name="profile_delete", methods={"DELETE"})
+     * @Route("/profile/{id}", name="profile_delete", methods={"DELETE"})
      */
     public function delete(Request $request, Profile $profile): Response
     {

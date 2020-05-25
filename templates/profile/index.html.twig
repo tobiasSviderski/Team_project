@@ -5,12 +5,30 @@
 {% block body %}
     <h1>Profile table</h1>
 
+    {% for message in app.flashes('error') %}
+        {#        <div class="alert alert-danger alert-dismissible fade show" role="alert">#}
+        <strong>Alert</strong> {{ message }}
+        {#            <button type="button" class="close" data-dismiss="alert" aria-label="Close">#}
+        {#                <span aria-hidden="true">&times;</span>#}
+        {#            </button>#}
+        {#        </div>#}
+    {% endfor %}
+
+    {% for message in app.flashes('success') %}
+        {#        <div class="alert alert-success alert-dismissible fade show" role="alert">#}
+        <strong>Success</strong> {{ message }}
+        {#            <button type="button" class="close" data-dismiss="alert" aria-label="Close">#}
+        {#                <span aria-hidden="true">&times;</span>#}
+        {#            </button>#}
+        {#        </div>#}
+    {% endfor %}
+
+
+
+
     <div class="item">
         <div class="toolbar">
             <div class="form-inline" role="form">
-{#                <div class="form-group">#}
-{#                    <button href="{{ path('profile_new') }}" class="form-control w70 btn btn-square">New profile</button>#}
-{#                </div>#}
                 <div class="form-group">
                     <a href="{{ path('profile_new') }}" class="form-control w70 btn btn-square">New profile</a>
                 </div>
@@ -29,10 +47,12 @@
                 <th>Id</th>
                 <th>Title</th>
                 <th>Created</th>
-                <th>File</th>
+                <th>Author</th>
                 <th>Enable</th>
-                <th>Available&nbsp;for&nbsp;all</th>
-                <th>Actions</th>
+                <th>No. of subscribers</th>
+                <th>No. of logs</th>
+                <th>Download file</th>
+                <th>Other actions</th>
             </tr>
             </thead>
             <tbody>
@@ -41,8 +61,30 @@
                     <td>{{ profile.id }}</td>
                     <td>{{ profile.title }}</td>
                     <td>{{ profile.created ? profile.created|ago : 'just now' }}</td>
-                    <td>{{ profile.file }}</td>
-                    <td>{{ profile.enable ? 'Yes' : 'No' }}</td>
+                    <td><a href="{{ path('user_show', {'id' : profile.author.id}) }}" class="links"></a>{{ profile.author.username }}</td>
+                    <td>{{ profile.enable ? 'Yes' : 'No' }}
+                    {% if profile.subscriptions is not empty %}
+                        {{ profile.subscriptions|length }}
+                    {% else %}
+                        for everyone
+                    {% endif %}
+                    </td>
+                    <td>
+                    {% if profile.logs is not empty %}
+                        {{ profile.logs|lenght }}
+                    {% else %}
+                        No logs yet
+                    {% endif %}
+                    </td>
+                    <td>
+                        <a href="{{ path('profile_download', {'id': profile.file.id) }}" class="links" >download</a>
+                    </td>
+                    <td>
+
+                    </td>
+
+
+                    {{ profile.file.id }}
                     <td>{{ profile.forAll ? 'Yes' : 'No' }}</td>
                     <td>
                         <a class="links" href="{{ path('profile_show', {'id': profile.id}) }}">

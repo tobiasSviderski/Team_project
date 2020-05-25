@@ -2,6 +2,7 @@
     border-radius: 0; !important;
     background-color: #d80000;
     font-weight: 4500;
+    color: white;
 }
 
 .btn-square:click{
@@ -18,5 +19,43 @@
 
 .links:hover{
     color: darkred;
-
 }
+
+.password_label{
+
+    border-radius: 0; !important;
+    background-color: #d80000;
+    font-weight: 4500;
+    color: white;
+}
+
+.password_label:hover {
+    color: darked;
+}
+
+.password_label_checked{
+    background-color:  whitesmoke;
+    color: #d80000;
+}
+/*#seeOldPassword + .password_label_old {*/
+/*    border-radius: 0; !important;*/
+/*    background-color: #d80000;*/
+/*    font-weight: 4500;*/
+/*    color: white;*/
+/*}*/
+
+/*#seeOldPassword:checked + /password_label_old {*/
+/*   border-radius: 0; !important;*/
+/*   background-color: white;*/
+/*   font-weight: 4500;*/
+/*   color: #d80000;*/
+/*}*/
+
+/*.password_label_old:hover {*/
+/*    background-color: white;*/
+/*    color: darkred;*/
+/*}*/
+
+/*check-with-label:checked + .label-for-check {*/
+/*    font-weight: bold;*/
+/*}*/

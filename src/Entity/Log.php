@@ -10,6 +10,13 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class Log
 {
+    const TYPE_NEW = 'TYPE_NEW';
+    const TYPE_DOWNLOAD = 'TYPE_DOWNLOAD';
+    const TYPE_UPLOAD = 'TYPE_UPLOAD';
+    const TYPE_EDIT = 'TYPE_EDIT';
+
+    const DEFAULT_TYPE = self::TYPE_NEW;
+
     /**
      * @ORM\Id()
      * @ORM\GeneratedValue()
@@ -37,6 +44,11 @@ class Log
      * @ORM\Column(type="datetime")
      */
     private $created;
+
+    public function __construct()
+    {
+        $this->setType(self::DEFAULT_TYPE);
+    }
 
     public function getId(): ?int
     {

@@ -15,11 +15,10 @@ use Symfony\Component\Security\Core\User\UserInterface;
  */
 class User implements UserInterface
 {
-    const ROLE_DOWNLOADER = 'ROLE_DOWNLOADER';
-    const ROLE_UPLOADER = 'ROLE_UPLOADER';
-    const ROLE_ADMIN= 'ROLE_ADMIN';
+    const ROLE_USER = 'ROLE_USER';
+    const ROLE_ADMIN = 'ROLE_ADMIN';
 
-    const DEFAULT_ROLES = [self::ROLE_DOWNLOADER];
+    const DEFAULT_ROLES = [self::ROLE_USER];
 
 
     /**
@@ -46,16 +45,6 @@ class User implements UserInterface
     private $password;
 
     /**
-     * @ORM\OneToMany(targetEntity=Profile::class, mappedBy="author")
-     */
-    private $profiles;
-
-    /**
-     * @ORM\ManyToMany(targetEntity=Profile::class, mappedBy="subscribers")
-     */
-    private $subscribers;
-
-    /**
      * @ORM\OneToMany(targetEntity=Log::class, mappedBy="author")
      */
     private $logs;
@@ -70,12 +59,17 @@ class User implements UserInterface
      */
     private $created;
 
+    /**
+     * @ORM\OneToMany(targetEntity=Subscription::class, mappedBy="user")
+     */
+    private $subscriptions;
+
     public function __construct()
     {
-        $this->profiles = new ArrayCollection();
-        $this->subscribers = new ArrayCollection();
         $this->logs = new ArrayCollection();
         $this->roles = self::DEFAULT_ROLES;
+        $this->enabled = true;
+        $this->subscriptions = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -131,82 +125,6 @@ class User implements UserInterface
     }
 
     /**
-     * @see UserInterface
-     */
-    public function getSalt()
-    {
-        // not needed when using the "bcrypt" algorithm in security.yaml
-    }
-
-    /**
-     * @see UserInterface
-     */
-    public function eraseCredentials()
-    {
-        // If you store any temporary, sensitive data on the user, clear it here
-        // $this->plainPassword = null;
-    }
-
-    /**
-     * @return Collection|Profile[]
-     */
-    public function getProfiles(): Collection
-    {
-        return $this->profiles;
-    }
-
-    public function addProfile(Profile $profile): self
-    {
-        if (!$this->profiles->contains($profile)) {
-            $this->profiles[] = $profile;
-            $profile->setAuthor($this);
-        }
-
-        return $this;
-    }
-
-    public function removeProfile(Profile $profile): self
-    {
-        if ($this->profiles->contains($profile)) {
-            $this->profiles->removeElement($profile);
-            // set the owning side to null (unless already changed)
-            if ($profile->getAuthor() === $this) {
-                $profile->setAuthor(null);
-            }
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return Collection|Profile[]
-     */
-    public function getSubscribers(): Collection
-    {
-        return $this->subscribers;
-    }
-
-    public function addSubscriber(Profile $subscriber): self
-    {
-        if (!$this->subscribers->contains($subscriber)) {
-            $this->subscribers[] = $subscriber;
-            $subscriber->addSubscriber($this);
-        }
-
-        return $this;
-    }
-
-    public function removeSubscriber(Profile $subscriber): self
-    {
-        if ($this->subscribers->contains($subscriber)) {
-            $this->subscribers->removeElement($subscriber);
-            $subscriber->removeSubscriber($this);
-        }
-
-        return $this;
-    }
-
-    /**
      * @return Collection|Log[]
      */
     public function getLogs(): Collection
@@ -237,7 +155,7 @@ class User implements UserInterface
         return $this;
     }
 
-    public function getEnabled(): ?bool
+    public function isEnabled(): ?bool
     {
         return $this->enabled;
     }
@@ -261,8 +179,50 @@ class User implements UserInterface
         return $this;
     }
 
+    /**
+     * @return Collection|Subscription[]
+     */
+    public function getSubscriptions(): Collection
+    {
+        return $this->subscriptions;
+    }
+
+    public function addSubscription(Subscription $subscription): self
+    {
+        if (!$this->subscriptions->contains($subscription)) {
+            $this->subscriptions[] = $subscription;
+            $subscription->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeSubscription(Subscription $subscription): self
+    {
+        if ($this->subscriptions->contains($subscription)) {
+            $this->subscriptions->removeElement($subscription);
+            // set the owning side to null (unless already changed)
+            if ($subscription->getUser() === $this) {
+                $subscription->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getSalt()
+    {
+        // TODO: Implement getSalt() method.
+    }
+
+    public function eraseCredentials()
+    {
+        // TODO: Implement eraseCredentials() method.
+    }
+
+
     public function __toString()
     {
-       return $this->username;
+        return $this->username;
     }
 }

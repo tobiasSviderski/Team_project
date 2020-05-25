@@ -24,8 +24,9 @@ class ProfileNewType extends AbstractType
                 'required' => false
             ])
             ->add('file', FileType::class,[
+                'mapped' => false,
                 'label' => 'File',
-                'required' => true,
+                'required' => false,
 //                'constraints' => [
 //                    new File([
 //                        'maxSize' => '1024k',
@@ -37,6 +38,7 @@ class ProfileNewType extends AbstractType
 //                ]
             ])
             ->add('forAll', CheckboxType::class, [
+                'mapped' => false,
                 'data' => true,
                 'label' => 'available for all',
                 'required' => false
@@ -45,7 +47,7 @@ class ProfileNewType extends AbstractType
                 'data' => true,
                 'label' => 'enable to be visible'
             ])
-            ->add('subscribers', EntityType::class, [
+            ->add('subscriptions', EntityType::class, [
                 'mapped' => false,
                 'required' => false,
                 'class' => User::class,

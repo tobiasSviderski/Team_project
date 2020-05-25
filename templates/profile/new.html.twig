@@ -35,9 +35,10 @@
             <div class="col-xs-6 center-block pl-3 pt-4">
                 <div class="container" id="subscribers-area">
 
-                    {{ form_label(form.subscribers) }}
+                    {{ form_label(form.subscriptions) }}
 
-                {% for subscriber in form.subscribers %}
+                    {% for subscriber in form.subscriptions %}
+
                     {{ form_label(subscriber, {'attr': {'class': 'custom-control-label'}}) }}
                     {{ form_widget(subscriber) }}
                 {% endfor %}

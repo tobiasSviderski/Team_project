@@ -35,34 +35,32 @@ class Profile
     private $author;
 
     /**
-     * @ORM\Column(type="string", length=255)
-     */
-    private $file;
-
-    /**
      * @ORM\Column(type="boolean")
      */
     private $enable;
 
-    /**
-     * @ORM\Column(type="boolean")
-     */
     private $forAll;
-
-    /**
-     * @ORM\ManyToMany(targetEntity=User::class, inversedBy="subscribers")
-     */
-    private $subscribers;
 
     /**
      * @ORM\OneToMany(targetEntity=Log::class, mappedBy="profile", orphanRemoval=true)
      */
     private $logs;
 
+    /**
+     * @ORM\OneToMany(targetEntity=Subscription::class, mappedBy="profile")
+     */
+    private $subscriptions;
+
+    /**
+     * @ORM\OneToOne(targetEntity=File::class, cascade={"persist", "remove"})
+     */
+    private $file;
+
     public function __construct()
     {
-        $this->subscribers = new ArrayCollection();
         $this->logs = new ArrayCollection();
+        $this->forAll = true;
+        $this->subscriptions = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -106,18 +104,6 @@ class Profile
         return $this;
     }
 
-    public function getFile(): ?string
-    {
-        return $this->file;
-    }
-
-    public function setFile(string $file): self
-    {
-        $this->file = $file;
-
-        return $this;
-    }
-
     public function getEnable(): ?bool
     {
         return $this->enable;
@@ -130,48 +116,15 @@ class Profile
         return $this;
     }
 
-    public function getForAll(): ?bool
-    {
-        return $this->forAll;
-    }
-
     public function setForAll(bool $forAll): self
     {
         $this->forAll = $forAll;
-
         return $this;
     }
 
-    /**
-     * @return Collection|User[]
-     */
-    public function getSubscribers(): Collection
+    public function isforAll(): ?bool
     {
-        return $this->subscribers;
-    }
-
-    public function addSubscriber(User $subscriber): self
-    {
-        if (!$this->subscribers->contains($subscriber)) {
-            $this->subscribers[] = $subscriber;
-        }
-
-        return $this;
-    }
-
-    public function removeSubscriber(User $subscriber): self
-    {
-        if ($this->subscribers->contains($subscriber)) {
-            $this->subscribers->removeElement($subscriber);
-        }
-
-        return $this;
-    }
-
-    public function resetSubscriber(): self
-    {
-        $this->subscribers = new ArrayCollection();
-        return $this;
+        return $this->isForAll();
     }
 
     /**
@@ -201,6 +154,56 @@ class Profile
                 $log->setProfile(null);
             }
         }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Subscription[]
+     */
+    public function getSubscriptions(): Collection
+    {
+        return $this->subscriptions;
+    }
+
+    public function addSubscription(Subscription $subscription): self
+    {
+        if (!$this->subscriptions->contains($subscription)) {
+            $this->subscriptions[] = $subscription;
+            $subscription->setProfile($this);
+        }
+
+        $this->forAll = false;
+
+        return $this;
+    }
+
+    public function removeSubscription(Subscription $subscription): self
+    {
+        if ($this->subscriptions->contains($subscription)) {
+            $this->subscriptions->removeElement($subscription);
+            // set the owning side to null (unless already changed)
+            if ($subscription->getProfile() === $this) {
+                $subscription->setProfile(null);
+            }
+        }
+
+        if (empty($this->subscriptions))
+        {
+            $this->forAll = true;
+        }
+
+        return $this;
+    }
+
+    public function getFile(): ?File
+    {
+        return $this->file;
+    }
+
+    public function setFile(?File $file): self
+    {
+        $this->file = $file;
 
         return $this;
     }

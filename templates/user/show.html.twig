@@ -2,14 +2,42 @@
 
 {% block title %}User{% endblock %}
 
+{% block stylesheets %}
+    <style>
+        .password-change, .password-change:hover{
+            color:#333
+        }
+    </style>
+{% endblock %}
+
 {% block body %}
-    <h1>User</h1>
-    <div class="w-50 p-3" id="profile_show_table">
+    <h1 class="pt-5">User</h1>
+
+    {% for message in app.flashes('success') %}
+{#        <div class="alert alert-danger alert-dismissible fade show" role="alert">#}
+            <strong>Alert</strong> {{ message }}
+{#            <button type="button" class="close" data-dismiss="alert" aria-label="Close">#}
+{#                <span aria-hidden="true">&times;</span>#}
+{#            </button>#}
+{#        </div>#}
+    {% endfor %}
+
+    {% for message in app.flashes('success') %}
+{#        <div class="alert alert-success alert-dismissible fade show" role="alert">#}
+            <strong>Success</strong> {{ message }}
+{#            <button type="button" class="close" data-dismiss="alert" aria-label="Close">#}
+{#                <span aria-hidden="true">&times;</span>#}
+{#            </button>#}
+{#        </div>#}
+    {% endfor %}
+
+
+    <div class="p-3" id="profile_show_table">
         <div class="item">
             <div class="toolbar pb-3">
                 <div class="form-inline" role="form">
                     <div class="form-group">
-                        <a href="{{ path('user_index') }}" class="form-control w70 btn btn-square">Back to list</a>
+                        <a href="{{ path('user_index') }}" class="form-control btn btn-square">Back to list</a>
                     </div>
                     <div class="form-group">
                         <a href="{{ path('user_edit', {'id': user.id}) }}" class="form-control w70 btn btn-square">Edit</a>
@@ -17,9 +45,16 @@
                     <div class="form-group">
                         {{ include('user/_delete_form.html.twig') }}
                     </div>
+                    <div class="form-group">
+                        <button type="button" class="btn btn-square" data-toggle="modal" data-target="#exampleModal">
+                            Change password
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
+
+
         <table
                 data-toolbar=".toolbar"
                 data-toggle="table"
@@ -54,4 +89,98 @@
     </div>
 
 
+
+
+    <!-- Modal -->
+    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Change password</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+
+                <div class="modal-body">
+                    {{ form_start(passwordform) }}
+
+                    <div class="form-group">
+                        {{ form_label(passwordform.oldPassword) }}
+                        <div class="input-group" id="show_hide_password">
+                            {{ form_widget(passwordform.oldPassword, {'attr': {'class': 'password_input_old'}}) }}
+                            <label for="seeOldPassword" id="password_label_old" class="btn password_label">
+                                <i class="fa fa-eye" id="password_icon_old"  aria-hidden="true"></i>
+                            </label>
+                            <input type="checkbox" id="seeOldPassword" class="password_checkbox" style="display:none">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        {{ form_label(passwordform.newPassword) }}
+                        <div class="input-group" id="show_hide_password">
+                            {{ form_widget(passwordform.newPassword, {'attr': {'class': 'password_input_new'}}) }}
+                                <label for="seeNewPassword" id="password_label_new" class="btn password_label">
+                                    <i class="fa fa-eye" id="password_icon_new" aria-hidden="true"></i>
+                                </label>
+                                <input type="checkbox" id="seeNewPassword" class="password_checkbox" style="display:none">
+                        </div>
+                    </div>
+
+                <div class="modal-footer">
+                    {{ form_row(passwordform.submit) }}
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+                {{ form_end(passwordform) }}
+            </div>
+        </div>
+    </div>
+
+
+{% endblock %}
+
+{% block javascripts %}
+<script>
+$(document).ready(function(){
+    // $('.alert').alert('close')
+
+    $('#seeOldPassword').click(function(){
+        if($('#seeOldPassword').is(':checked')) {
+            $('.password_input_old').attr('type', 'text');
+            $('#password_icon_old').removeClass("fa-eye");
+            $('#password_icon_old').addClass("fa-eye-slash");
+
+            $('#password_label_old').addClass('password_label_checked');
+            $('#password_label_old').removeClass('password_label');
+        }
+        else {
+            $('.password_input_old').attr('type', 'password');
+            $('#password_icon_old').removeClass( "fa-eye-slash" );
+            $('#password_icon_old').addClass( "fa-eye" );
+
+            $('#password_label_old').addClass('password_label');
+            $('#password_label_old').removeClass('password_label_checked');
+        }
+    });
+
+    $('#seeNewPassword').click(function(){
+        if($('#seeNewPassword').is(':checked')) {
+            $('.password_input_new').attr('type', 'text');
+            $('#password_icon_new').removeClass("fa-eye");
+            $('#password_icon_new').addClass("fa-eye-slash");
+
+            $('#password_label_new').addClass('password_label_checked');
+            $('#password_label_new').removeClass('password_label');
+        }
+        else {
+            $('.password_input_new').attr('type', 'password');
+            $('#password_icon_new').removeClass( "fa-eye-slash" );
+            $('#password_icon_new').addClass( "fa-eye" );
+
+            $('#password_label_new').addClass('password_label');
+            $('#password_label_new').removeClass('password_label_checked');
+        }
+    });
+});
+</script>
 {% endblock %}
