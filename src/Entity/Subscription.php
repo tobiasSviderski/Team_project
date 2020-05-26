@@ -27,11 +27,6 @@ class Subscription
      */
     private $user;
 
-    /**
-     * @ORM\Column(type="boolean")
-     */
-    private $agnolidge;
-
     public function __construct()
     {
         $this->agnolidge = false;
@@ -62,18 +57,6 @@ class Subscription
     public function setUser(?User $user): self
     {
         $this->user = $user;
-
-        return $this;
-    }
-
-    public function isAgnolidge(): ?bool
-    {
-        return $this->agnolidge;
-    }
-
-    public function setAgnolidge(bool $agnolidge): self
-    {
-        $this->agnolidge = $agnolidge;
 
         return $this;
     }

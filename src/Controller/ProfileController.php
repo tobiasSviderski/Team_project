@@ -14,8 +14,10 @@ use App\Repository\UserRepository;
 use App\Security\FileNotExistsException;
 use App\Security\FileNotMoveableException;
 use App\Service\ProfileCreateService;
+use Ramsey\Uuid\Uuid;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -84,63 +86,70 @@ class ProfileController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            dump($form->getData());
-            die();
 
+            // Get the file from the profile object
+            $file = $profile->getFile();
 
             if($form->getClickedButton() && 'attemptToSave' === $form->getClickedButton()->getName()) {
-                // Get the file from the profile object
-                $file = $profile->getFile();
-
                 // Check if somebody else could alreay have dibs on the file
-                if ($file->getAttemptToChangeBy() === null) {
-                    $this->addFlash("Error", "Somebody else made their changes and presaved this file");
+                if (!is_null($file->getAttemptToChangeBy())) {
+                    $this->addFlash("error", "Somebody else made their changes and presaved this file");
                 } else {
                     $file->setAttemptToChangeBy($this->getUser());
-                    $form->add('attemptToSave', SubmitType::class, [
-                        'label' => 'Attempt to upload a file',
-                        'disabled' => true
-                    ]);
-                    $form->add('save', SubmitType::class, [
-                        'label' => 'Attempt to upload a file'
-                    ]);
+                    $this->getDoctrine()->getManager()->persist($file);
+                    $this->getDoctrine()->getManager()->flush();
+                    $this->addFlash("success", "First part went successfuly");
                 }
-
             }
-
             if($form->getClickedButton() && 'save' === $form->getClickedButton()->getName()) {
+                if (is_null($file->getAttemptToChangeBy()))
+                    $this->addFlash("error", "Nobody yet to attempt to upload for this profile.");
+                else {
+                    if ($this->getUser() !== $file->getAttemptToChangeBy())
+                        $this->addFlash("error", "This profile is being updated by " . $file_attempt->getUsername() . ' .');
+                    else {
+                        // Replace
 
+                        // Get the new profile from the user
+                        /** @var UploadedFile $profileFile */
+                        $profileFile = $form['file']->getData();
+
+                        // Does file exists if not do nothing, display error
+                        if (!$profileFile){
+                            $this->addFlash("error", "No file was found to upload.");
+                        }
+                        else {
+                            // Unlink the old profile
+                            unlink($this->getParameter('profile_directory') . $file->getFilename());
+
+                            try {
+                                $profileFile->move(
+                                    $this->getParameter('profile_directory'),
+                                    $file->getFilename()
+                                );
+                                $file->setVersion(Uuid::uuid4());
+                                $file->setAttemptToChangeBy(null);
+                                $file->setExtention($profileFile->getClientOriginalExtension());
+                                $this->getDoctrine()->getManager()->persist($file);
+                                $this->getDoctrine()->getManager()->flush();
+
+                                // Return success message
+                                $this->addFlash('success', 'File was uploaded');
+                            }
+                            catch (\Exception $e)
+                            {
+                                $this->addFlash('error', $e);
+                            }
+                        }
+                    }
+                }
             }
-
-//            $profileFile = $form['file']->getData();
-//
-//            // If file exists
-//            if ($profileFile) {
-//
-//                // Get file name and titile if any
-//                $originalFileName = pathinfo($profileFile->getClientOriginalName(), PATHINFO_FILENAME);
-//                $inputedTitle = $form->get('title')->getData();
-//
-//                // Moving the file
-//                try {
-//                    // Unlink the old file
-//                    unlink($this->getParameter('profile_directory') . $profile->getFile());
-//
-//                    // Move the new one
-//                    $profileFile->move(
-//                        $this->getParameter('profile_directory'),
-//                        $profile->getFile()
-//                    );
-//                } catch (FileException $e) {
-//                    #TODO handle file excption
-//                }
-//            }
         }
 
         return $this->render('profile/show.html.twig', [
             'profile' => $profile,
             'subscriptions' => $subscriptionRepository->findBy(['profile' => $profile]),
-            'upload' => $form->createView()
+            'upload' => $form->createView(),
         ]);
     }
 

@@ -33,11 +33,6 @@ class File
     private $version;
 
     /**
-     * @ORM\Column(type="boolean")
-     */
-    private $attemptToChange;
-
-    /**
      * @ORM\ManyToOne(targetEntity=User::class)
      */
     private $attemptToChangeBy;
@@ -45,7 +40,6 @@ class File
 
     public function __construct()
     {
-        $this->attemptToChange = false;
         $this->attemptToChangeBy = null;
     }
 
@@ -86,18 +80,6 @@ class File
     public function setVersion(string $version): self
     {
         $this->version = $version;
-
-        return $this;
-    }
-
-    public function getAttemptToChange(): ?bool
-    {
-        return $this->attemptToChange;
-    }
-
-    public function setAttemptToChange(bool $attemptToChange): self
-    {
-        $this->attemptToChange = $attemptToChange;
 
         return $this;
     }

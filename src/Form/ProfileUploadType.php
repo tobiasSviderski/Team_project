@@ -15,7 +15,7 @@ class ProfileUploadType extends AbstractType
         $builder
             ->add('file', FileType::class,[
                 'label' => 'File',
-                'required' => true,
+                'required' => false,
 //                'constraints' => [
 //                    new File([
 //                        'maxSize' => '1024k',
@@ -30,8 +30,7 @@ class ProfileUploadType extends AbstractType
                 'label' => 'Attempt to upload a file'
             ])
             ->add('save', SubmitType::class, [
-                'label' => 'Upload a file',
-                    'disabled' => true
+                'label' => 'Upload a file'
             ])
         ;
     }

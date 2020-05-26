@@ -19,6 +19,8 @@
 {% block body %}
     <h1 class="pb-3 pt-5">Profile</h1>
 
+    {{ include('flash.html.twig') }}
+
     <div class="w-50" id="profile_show_table">
         <div class="item">
             <div class="toolbar_show pb-3">
@@ -151,10 +153,14 @@
                                 {{ form_widget(upload.file, { 'attr': {'class': 'custom-file-inpu', 'aria-describedly': 'fileInput'}}) }}
                             </div>
                         </div>
+                    {% if profile.file.attemptToChangeBy %}
+                        <div style="color:red">Account <strong>{{ profile.file.attemptToChangeBy.username }}</strong> locked this profile.</div>
+                    {% endif %}
                 </div>
                 <div class="modal-footer">
                     {{ form_widget(upload.attemptToSave, { 'attr': {'class': 'btn btn-primary' }} ) }}
                     {{ form_widget(upload.save, { 'attr': {'class': 'btn btn-primary' }} ) }}
+
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                 </div>
                 {{ form_end(upload) }}
@@ -178,8 +184,7 @@
                            data-toggle="table"
                            data-show-columns="true"
                            data-virtual-scroll="true"
-                           data-search="true"
-                           >
+                           data-search="true" >
                         <thead>
                             <tr>
                                 <th>ID</th>
