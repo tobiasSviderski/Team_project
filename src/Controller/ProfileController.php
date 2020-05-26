@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Log;
 use App\Entity\Profile;
 use App\Entity\Subscription;
+use App\Entity\User;
 use App\Form\ProfileEditType;
 use App\Form\ProfileNewType;
 use App\Form\ProfileUploadType;
@@ -15,6 +16,7 @@ use App\Security\FileNotExistsException;
 use App\Security\FileNotMoveableException;
 use App\Service\ProfileCreateService;
 use Ramsey\Uuid\Uuid;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -27,15 +29,22 @@ class ProfileController extends AbstractController
     /**
      * @Route("/", name="profile_index", methods={"GET"})
      */
-    public function index(ProfileRepository $profileRepository): Response
+    public function index(ProfileRepository $profileRepository, SubscriptionRepository $subscriptionRepository): Response
     {
+        $profile = $profileRepository->findAll();
+        if (in_array(User::ROLE_ADMIN, $this->getUser()->getRoles())) {
+            // Get all profiles regarless
+            $profiles = $profileRepository->findBy(['forAll' => true]);
+        }
+
         return $this->render('profile/index.html.twig', [
-            'profiles' => $profileRepository->findAll(),
+            'profiles' => $profile
         ]);
     }
 
     /**
      * @Route("/profile/new", name="profile_new", methods={"GET","POST"})
+     * @IsGranted("ROLE_ADMIN")
      */
     public function new_profile(
         Request $request,
@@ -82,6 +91,22 @@ class ProfileController extends AbstractController
      */
     public function show(Request $request, Profile $profile, SubscriptionRepository $subscriptionRepository): Response
     {
+        if (in_array(User::ROLE_USER, $this->getUser()->getRoles()))
+        {
+            // If its a user
+            // profile has to be for all
+            // profile has to be subcribed to the user
+            if (!$profile->isforAll()) {
+                dump('Is for all is false');
+                die();
+                $subscription = $subscriptionRepository->findSubscribeProfile($this->getUser(), $profile);
+                if (!$subscription) {
+                    $this->addFlash('error', 'You do not have access to see this profile');
+                    return $this->redirectToRoute('profile_idex');
+                }
+            }
+        }
+
         $form = $this->createForm(ProfileUploadType::class);
         $form->handleRequest($request);
 
@@ -155,6 +180,7 @@ class ProfileController extends AbstractController
 
     /**
      * @Route("/profile/{id}/edit", name="profile_edit", methods={"GET","POST"})
+     * @IsGranted("ROLE_ADMIN")
      */
     public function edit(
         Request $request,
@@ -202,7 +228,7 @@ class ProfileController extends AbstractController
 
             return $this->render('profile/edit.html.twig', [
                 'profile' => $profile,
-                'users' => $userRepository->findAll(),
+                'users' => $userRepository->findBy(['enabled' => true]),
                 'subscriptions' => $subscriptionRepository->findBy(['profile' => $profile]),
                 'form' => $form->createView(),
             ]);
@@ -212,7 +238,21 @@ class ProfileController extends AbstractController
     /**
      * @Route("/profile/{id}/download", name="profile_download")
      */
-    public function download(Profile $profile){
+    public function download(Profile $profile, SubscriptionRepository $subscriptionRepository)
+    {
+        if (in_array(User::ROLE_USER, $this->getUser()->getRoles())) {
+            // If its a user
+            // profile has to be for all
+            // profile has to be subcribed to the user
+            if (!$profile->isforAll()) {
+                $subscription = $subscriptionRepository->findSubscribeProfile($this->getUser(), $profile);
+                if (!$subscription) {
+                    $this->addFlash('error', 'You do not have access to see this profile');
+                    return $this->redirectToRoute('profile_idex');
+                }
+            }
+        }
+
         $title = $profile->getTitle();
         $file = $profile->getFile();
 
@@ -231,6 +271,7 @@ class ProfileController extends AbstractController
 
     /**
      * @Route("/profile/{id}", name="profile_delete", methods={"DELETE"})
+     * @IsGranted("ROLE_ADMIN")
      */
     public function delete(Request $request, Profile $profile): Response
     {

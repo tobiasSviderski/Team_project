@@ -128,24 +128,20 @@
                 </div>
 
                <div class="modal-body">
-                   <table id="table-modal"
-                   data-toggle="table"
-                   data-show-columns="true"
-                   data-virtual-scroll="true"
-                   data-search="true">
+                   <table id="table-modal" class="table">
                        <thead>
                        <tr>
-                           <th>ID</th>
-                           <th>Profile</th>
-                           <th>Author</th>
-                           <th>Type</th>
-                           <th>Created</th>
+                           <th scope="col">ID</th>
+                           <th scope="col">Profile</th>
+                           <th scope="col">Author</th>
+                           <th scope="col">Type</th>
+                           <th scope="col">Created</th>
                        </tr>
                        </thead>
                        <tbody>
                        {% for log in user.logs  %}
                            <tr>
-                               <td>{{ log.id }}</td>
+                               <td scope="row">{{ log.id }}</td>
                                <td><a href="{{ path('profile_show', {'id' : log.profile.id})}}" class="links">{{ log.profile.title }}</a></td>
                                <td><a href="{{ path('user_show', {'id' : log.author.id})}}" class="links">{{ log.author.username }}</a></td>
                                <td>{{ log.type }}</td>

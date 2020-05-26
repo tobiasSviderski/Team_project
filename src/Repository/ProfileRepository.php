@@ -19,6 +19,10 @@ class ProfileRepository extends ServiceEntityRepository
         parent::__construct($registry, Profile::class);
     }
 
+    public function findAllForUser(){
+
+    }
+
     // /**
     //  * @return Profile[] Returns an array of Profile objects
     //  */

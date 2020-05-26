@@ -56,7 +56,8 @@ class ProfileNewType extends AbstractType
                 'expanded' => true,
                 'query_builder' => function (EntityRepository $er) {
                     return $er->createQueryBuilder('u')
-                        ->orderBy('u.username', 'ASC');
+                        ->orderBy('u.username', 'ASC')
+                        ->andWhere('u.enabled = 1');
                 },
                 'choice_label' => 'username'
             ])

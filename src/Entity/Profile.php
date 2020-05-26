@@ -39,6 +39,9 @@ class Profile
      */
     private $enable;
 
+    /**
+     * @ORM\Column(type="boolean")
+     */
     private $forAll;
 
     /**
@@ -124,7 +127,7 @@ class Profile
 
     public function isforAll(): ?bool
     {
-        return $this->isForAll();
+        return $this->forAll;
     }
 
     /**

@@ -8,6 +8,7 @@ use App\Entity\User;
 use App\Form\RegistrationFormType;
 use App\Service\RegisterUserService;
 use Doctrine\DBAL\Exception\NotNullConstraintViolationException;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -43,6 +44,7 @@ class AccessRestrictionController extends AbstractController
      * @param Request $request
      * @param RegisterUserService $service
      * @Route("/register", name="app_register", methods={"GET", "POST"})
+     * @IsGranted("ROLE_ADMIN")
      */
     public function register(Request $request, RegisterUserService $service){
         $user = new User();
@@ -53,7 +55,7 @@ class AccessRestrictionController extends AbstractController
             try {
                 // Call the service and create a user
                 if ($service->create($form['plainPassword']->getData(), $user))
-                    $this->addFlash('succes', 'Account was created.');
+                    $this->addFlash('success', 'Account was created.');
                 else {
                     $this->addFlash('alert', 'The account was not created.');
                 }

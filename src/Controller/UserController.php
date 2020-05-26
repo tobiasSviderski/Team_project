@@ -7,6 +7,8 @@ use App\Form\ChangePasswordType;
 use App\Form\UserEditType;
 use App\Repository\ProfileRepository;
 use App\Repository\UserRepository;
+use Ramsey\Uuid\Uuid;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -23,6 +25,9 @@ class UserController extends AbstractController
      */
     public function index(UserRepository $userRepository): Response
     {
+        if (in_array(User::ROLE_USER, $this->getUser()->getRoles())) {
+            return $this->redirectToRoute('user_show', ['id' => $this->getUser()->getId()]);
+        }
         return $this->render('user/index.html.twig', [
             'users' => $userRepository->getAll(),
         ]);
@@ -31,10 +36,20 @@ class UserController extends AbstractController
     /**
      * @Route("/{id}", name="user_show", methods={"GET", "POST"})
      */
-    public function show(User $user, Request $request,
-    UserPasswordEncoderInterface $passwordEncoder
-): Response
+    public function show(
+        User $user,
+        Request $request,
+        UserPasswordEncoderInterface $passwordEncoder
+    ): Response
     {
+        if (in_array(User::ROLE_USER, $this->getUser()->getRoles())) {
+            if ($this->getUser() !== $user)
+            {
+                $this->addFlash('error', 'You do not have the permission to see other profiles');
+                return $this->redirectToRoute('profile_index');
+            }
+        }
+
         $form = $this->createForm(ChangePasswordType::class);
         $form->handleRequest($request);
 
@@ -80,6 +95,15 @@ class UserController extends AbstractController
      */
     public function edit(Request $request, User $user): Response
     {
+        if (in_array(User::ROLE_USER, $this->getUser()->getRoles())) {
+
+            if ($this->getUser() !== $user)
+            {
+                $this->addFlash('error', 'You do not have the permission to see other profiles');
+                return $this->redirectToRoute('profile_index');
+            }
+        }
+
         $form = $this->createForm(UserEditType::class, $user);
         $form->handleRequest($request);
 
@@ -102,6 +126,14 @@ class UserController extends AbstractController
      */
     public function delete(Request $request, User $user, ProfileRepository $profileRepository): Response
     {
+        if (in_array(User::ROLE_USER, $this->getUser()->getRoles())) {
+            if ($this->getUser() !== $user)
+            {
+                $this->addFlash('error', 'You do not have the permission to delete other profiles');
+                return $this->redirectToRoute('profile_index');
+            }
+        }
+
         if ($this->isCsrfTokenValid('delete'.$user->getId(), $request->request->get('_token'))) {
             $entityManager = $this->getDoctrine()->getManager();
 
@@ -111,7 +143,7 @@ class UserController extends AbstractController
                     $entityManager->remove($subscription);
 
                 $user->setEnabled(false);
-
+                $user->setUsername(Uuid::uuid4());
 
                 // Remove the user
                 $entityManager->persist($user);

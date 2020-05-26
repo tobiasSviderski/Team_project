@@ -29,13 +29,11 @@
                         <a href="{{ path('profile_index') }}" class="form-control w70 btn btn-square">Back to list</a>
                     </div>
                     <div class="form-group">
-                        <a href="{{ path('profile_edit', {'id': profile.id}) }}" class="form-control w70 btn btn-square">Edit</a>
-                    </div>
-                    <div class="form-group">
-                        {{ include('profile/_delete_form.html.twig') }}
-                    </div>
-                    <div class="form-group">
                         <a target="_blank" href="{{ path('profile_download', {'id': profile.id}) }}" class="form-control w70 btn btn-square">Download</a>
+                    </div>
+                    {% if is_granted('ROLE_ADMIN') %}
+                    <div class="form-group">
+                        <a href="{{ path('profile_edit', {'id': profile.id}) }}" class="form-control w70 btn btn-square">Edit</a>
                     </div>
                     <div class="form-group">
                         <button type="button" class="form-control w70 btn btn-square" data-toggle="modal" data-target="#exampleModal">
@@ -47,14 +45,14 @@
                             Logs
                         </button>
                     </div>
+                    <div class="form-group">
+                        {{ include('profile/_delete_form.html.twig') }}
+                    </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
-        <table
-                data-toolbar=".toolbar_show"
-                data-toggle="table"
-                data-show-columns="true"
-        >
+        <table class="table" >
             <thead>
             <tr>
                 <td colspan="2">Profile info</td>
@@ -62,8 +60,6 @@
 
             </thead>
             <tbody>
-
-
                 <tr>
                     <th>Id</th>
                     <td>{{ profile.id }}</td>
@@ -110,10 +106,9 @@
         </table>
     </div>
 
+    {% if is_granted('ROLE_ADMIN') %}
     <div class="w-25 p-3 pt-5 pl-5" id="profile_show_table_subscribers">
-    <table
-            data-toggle="table"
-    >
+    <table class="table" >
         <thead>
             <tr>
                 <th>Subscribed&nbsp;users</th>
@@ -168,7 +163,6 @@
         </div>
     </div>
 
-
     <!-- Modal show logs -->
     <div id="logsModal" class="modal fade" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">
@@ -181,10 +175,7 @@
                 </div>
                 <div class="modal-body">
                     <table id="table-modal"
-                           data-toggle="table"
-                           data-show-columns="true"
-                           data-virtual-scroll="true"
-                           data-search="true" >
+                           class="table" >
                         <thead>
                             <tr>
                                 <th>ID</th>
@@ -213,4 +204,6 @@
             </div>
         </div>
     </div>
+    {% endif %}
+
 {% endblock %}

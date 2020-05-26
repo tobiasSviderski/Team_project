@@ -48,6 +48,17 @@ class SubscriptionRepository extends ServiceEntityRepository
     }
     */
 
+    public function findSubscribeProfile($user, $profile){
+        return $this->createQueryBuilder('s')
+            ->andWhere('s.user = :u')
+            ->andWhere('s.profile = :p')
+            ->setParameter('u', $user)
+            ->setParameter('p', $profile)
+            ->getQuery()
+            ->getResult()
+            ;
+    }
+
     public function findUsers($profile)
     {
 //        return $this->createQueryBuilder('s')

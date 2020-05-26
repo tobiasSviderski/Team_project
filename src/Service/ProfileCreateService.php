@@ -114,7 +114,6 @@ class ProfileCreateService
                 foreach ($subscriptions as $subscriptionID) {
                     $subs = new Subscription();
                     $subs->setProfile($profile);
-                    $subs->setAgnolidge(true);
                     $subs->setUser($this->repository->find($subscriptionID));
 
                     // Pre save the subscription

@@ -10,9 +10,11 @@
     <div class="item">
         <div class="toolbar">
             <div class="form-inline" role="form">
+                {% if is_granted("ROLE_ADMIN") %}
                 <div class="form-group">
                     <a href="{{ path('profile_new') }}" class="form-control w70 btn btn-square">New profile</a>
                 </div>
+                {% endif %}
             </div>
         </div>
         <table
@@ -35,9 +37,12 @@
             </tr>
             </thead>
             <tbody>
-            {% for profile in profiles %}
+            {% if profiles %}
+            {% for profile in profiles  %}
                 <tr>
+
                     <td>{{ profile.id }}</td>
+
                     <td>{{ profile.title }}</td>
                     <td>{{ profile.created ? profile.created|ago : 'just now' }}</td>
                     <td><a href="{{ path('user_show', {'id' : profile.author.id}) }}" class="links">{{ profile.author.username }}</a></td>
@@ -57,16 +62,19 @@
                         {% endif %}
                     </td>
                     <td>
-                        <a href="{{ path('profile_download', {'id': profile.file.id}) }}" target="_blank" class="links" >download</a>
+                        <a href="{{ path('profile_download', {'id': profile.id}) }}" target="_blank" class="links" >download</a>
                         <a href="{{ path('profile_show', {'id': profile.id}) }}" class="links">show</a>
+                        {% if is_granted("ROLE_ADMIN") %}
                         <a href="{{ path('profile_edit', {'id': profile.id}) }}" class="links">edit</a>
+                        {% endif %}
                     </td>
                 </tr>
+            {% endfor %}
             {% else %}
                 <tr>
                     <td colspan="7">no records found</td>
                 </tr>
-            {% endfor %}
+            {% endif %}
             </tbody>
         </table>
     </div>
