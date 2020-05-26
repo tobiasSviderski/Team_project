@@ -5,11 +5,13 @@ namespace App\Controller;
 use App\Entity\User;
 use App\Form\ChangePasswordType;
 use App\Form\UserEditType;
+use App\Repository\ProfileRepository;
 use App\Repository\UserRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 
 /**
  * @Route("/user")
@@ -22,7 +24,7 @@ class UserController extends AbstractController
     public function index(UserRepository $userRepository): Response
     {
         return $this->render('user/index.html.twig', [
-            'users' => $userRepository->findAll(),
+            'users' => $userRepository->getAll(),
         ]);
     }
 
@@ -53,7 +55,7 @@ class UserController extends AbstractController
                 );
 
                 // If the change was made
-                if ($result === true) {
+                if ($result) {
                    $entityManager = $this->getDoctrine()->getManager();
                    $entityManager->persist($user);
                    $entityManager->flush();
@@ -64,6 +66,8 @@ class UserController extends AbstractController
             } else {
                 $this->addFlash('error', "The old password is not correct.");
             }
+
+
         }
         return $this->render('user/show.html.twig', [
             'user' => $user,
@@ -96,12 +100,33 @@ class UserController extends AbstractController
     /**
      * @Route("/{id}", name="user_delete", methods={"DELETE"})
      */
-    public function delete(Request $request, User $user): Response
+    public function delete(Request $request, User $user, ProfileRepository $profileRepository): Response
     {
         if ($this->isCsrfTokenValid('delete'.$user->getId(), $request->request->get('_token'))) {
             $entityManager = $this->getDoctrine()->getManager();
-            $entityManager->remove($user);
-            $entityManager->flush();
+
+            // Removing action
+            try {
+                foreach ($user->getSubscriptions() as $subscription)
+                    $entityManager->remove($subscription);
+
+                $user->setEnabled(false);
+
+
+                // Remove the user
+                $entityManager->persist($user);
+
+                // Flush data
+                $entityManager->flush();
+                $this->addFlash("success", "Profile was successfully removed");
+
+            }
+            catch (\Exception $e)
+            {
+                $this->addFlash("error", $e);
+            } finally {
+                return $this->redirectToRoute('user_index');
+            }
         }
 
         return $this->redirectToRoute('default');

@@ -256,7 +256,7 @@ class ProfileController extends AbstractController
                 $this->addFlash("success", "Profile was successfully removed");
             } catch (\Exception $e)
             {
-                $this->addFlash("alert", $e);
+                $this->addFlash("error", $e);
             } finally {
                 return $this->redirectToRoute('profile_index');
             }

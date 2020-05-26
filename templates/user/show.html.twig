@@ -32,10 +32,15 @@
 
         <table
                 data-toolbar=".toolbar"
+                data-virtual-scroll="true"
+                data-search="true"
                 data-toggle="table"
                 data-show-columns="true"
         >
             <thead>
+            <td colspan="2">User info</td>
+            </thead>
+            <tbody>
                 <tr>
                     <th>Id</th>
                     <td>{{ user.id }}</td>
@@ -51,14 +56,10 @@
                         {% endfor %} </td>
                 </tr>
                 <tr>
-                    <th>Enabled</th>
-                    <td>{{ user.enabled ? 'Yes' : 'No' }}</td>
-                </tr>
-                <tr>
                     <th>Created</th>
                     <td>{{ user.created ? user.created|ago : '' }}</td>
                 </tr>
-            </thead>
+            </tbody>
         </table>
     </div>
 

@@ -34,9 +34,6 @@ class RegistrationFormType extends AbstractType
                     ]),
                 ],
             ])
-            ->add('enabled', CheckboxType::class, [
-                'data' => true,
-            ])
             ->add('roles', ChoiceType::class, [
                 'multiple' => true,
                 'expanded' => false,

@@ -37,25 +37,22 @@
     background-color:  whitesmoke;
     color: #d80000;
 }
-/*#seeOldPassword + .password_label_old {*/
-/*    border-radius: 0; !important;*/
-/*    background-color: #d80000;*/
-/*    font-weight: 4500;*/
-/*    color: white;*/
-/*}*/
 
-/*#seeOldPassword:checked + /password_label_old {*/
-/*   border-radius: 0; !important;*/
-/*   background-color: white;*/
-/*   font-weight: 4500;*/
-/*   color: #d80000;*/
-/*}*/
 
-/*.password_label_old:hover {*/
-/*    background-color: white;*/
-/*    color: darkred;*/
-/*}*/
+.navbar {
+    background: #d80000
+}
 
-/*check-with-label:checked + .label-for-check {*/
-/*    font-weight: bold;*/
-/*}*/
+.navbar a {
+    color: whitesmoke;
+}
+
+.navbar a:hover {
+    background-color: whitesmoke;
+    color: black;
+}
+
+.hamburger {
+    font-size: 20px;
+    color: whitesmoke;
+}

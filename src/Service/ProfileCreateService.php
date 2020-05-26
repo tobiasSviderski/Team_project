@@ -17,6 +17,7 @@ use Ramsey\Uuid\Uuid;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\String\Slugger\SluggerInterface;
 
 class ProfileCreateService
@@ -58,14 +59,14 @@ class ProfileCreateService
      * @param UploadedFile $uploadedFile
      * @param bool $forAll
      * @param $subscriptions
-     * @param User $user
+     * @param UserInterface $user
      */
     public function create(
         Profile $profile,
         UploadedFile $uploadedFile,
         bool $forAll,
         $subscriptions,
-        User $user)
+        UserInterface $user)
     {
         // If the file exists
         if($uploadedFile)

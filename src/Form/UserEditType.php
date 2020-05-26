@@ -15,7 +15,6 @@ class UserEditType extends AbstractType
     {
         $builder
             ->add('username', TextType::class)
-            ->add('enabled')
             ->add('roles', ChoiceType::class, [
                 'multiple' => true,
                 'expanded' => false,

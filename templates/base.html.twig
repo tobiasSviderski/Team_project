@@ -17,7 +17,9 @@
 
     </head>
     <body>
+    {% if is_granted('IS_AUTHENTICATED_FULLY') %}
         {{ include('navigation.html.twig') }}
+    {% endif %}
         <div class="container">
         {% block body %}{% endblock %}
         </div>
