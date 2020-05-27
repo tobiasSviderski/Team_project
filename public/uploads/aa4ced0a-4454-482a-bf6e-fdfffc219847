@@ -1,22 +1,20 @@
-﻿{
-  "mouse": [
-    [
-      "wonder",
-      true,
-      false,
-      false,
-      true,
-      "purple"
-    ],
-    "strip",
-    true,
-    "series",
-    1655732805,
-    true
-  ],
-  "average": 333367207,
-  "sitting": "arm",
-  "brave": 1219363714.0985088,
-  "sat": false,
-  "tall": true
+{
+    "_id": "karma-netbeans-reporter@0.1.0",
+    "name": "karma-netbeans-reporter",
+    "version": "0.1.0",
+    "description": "A Karma plugin that reports results for NetBeans IDE.",
+    "main": "index.js",
+    "author": {
+        "name": "Tomas Mysik",
+        "email": "tmysik@apache.org"
+    },
+    "dependencies": {
+    },
+    "peerDependencies": {
+        "karma": ">=0.10"
+    },
+    "license": "Apache-2.0",
+    "bugs": {
+        "url": "https://issues.apache.org/jira/projects/NETBEANS/issues"
+    }
 }
