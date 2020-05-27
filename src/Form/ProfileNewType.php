@@ -26,7 +26,6 @@ class ProfileNewType extends AbstractType
             ->add('file', FileType::class,[
                 'mapped' => false,
                 'label' => 'File',
-                'required' => false,
 //                'constraints' => [
 //                    new File([
 //                        'maxSize' => '1024k',

@@ -60,6 +60,7 @@ class ProfileCreateService
      * @param bool $forAll
      * @param $subscriptions
      * @param UserInterface $user
+     * @throws \Exception
      */
     public function create(
         Profile $profile,
@@ -119,7 +120,14 @@ class ProfileCreateService
                     // Pre save the subscription
                     $this->entityManager->persist($subs);
                 }
+                $profile->setForAll(false);
             }
+            else
+                $profile->setForAll(true);
+
+
+
+
 
             // Creating log
             /** @var Log $log */

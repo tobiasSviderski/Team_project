@@ -38,38 +38,38 @@
             </thead>
             <tbody>
             {% if profiles %}
-            {% for profile in profiles  %}
-                <tr>
+                {% for profile in profiles  %}
+                    <tr>
 
-                    <td>{{ profile.id }}</td>
+                        <td>{{ profile.id }}</td>
 
-                    <td>{{ profile.title }}</td>
-                    <td>{{ profile.created ? profile.created|ago : 'just now' }}</td>
-                    <td><a href="{{ path('user_show', {'id' : profile.author.id}) }}" class="links">{{ profile.author.username }}</a></td>
-                    <td>{{ profile.enable ? 'Yes' : 'No' }} </td>
-                    <td>
-                        {% if profile.subscriptions is not empty %}
-                            {{ profile.subscriptions|length }}
-                        {% else %}
-                            for everyone
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if profile.logs is not empty %}
-                            {{ profile.logs|length }}
-                        {% else %}
-                            No logs yet
-                        {% endif %}
-                    </td>
-                    <td>
-                        <a href="{{ path('profile_download', {'id': profile.id}) }}" target="_blank" class="links" >download</a>
-                        <a href="{{ path('profile_show', {'id': profile.id}) }}" class="links">show</a>
-                        {% if is_granted("ROLE_ADMIN") %}
-                        <a href="{{ path('profile_edit', {'id': profile.id}) }}" class="links">edit</a>
-                        {% endif %}
-                    </td>
-                </tr>
-            {% endfor %}
+                        <td>{{ profile.title }}</td>
+                        <td>{{ profile.created ? profile.created|ago : 'just now' }}</td>
+                        <td><a href="{{ path('user_show', {'id' : profile.author.id}) }}" class="links">{{ profile.author.username }}</a></td>
+                        <td>{{ profile.enable ? 'Yes' : 'No' }} </td>
+                        <td>
+                            {% if profile.subscriptions is not empty %}
+                                {{ profile.subscriptions|length }}
+                            {% else %}
+                                for everyone
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if profile.logs is not empty %}
+                                {{ profile.logs|length }}
+                            {% else %}
+                                No logs yet
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{{ path('profile_download', {'id': profile.id}) }}" target="_blank" class="links" >download</a>
+                            <a href="{{ path('profile_show', {'id': profile.id}) }}" class="links">show</a>
+                            {% if is_granted("ROLE_ADMIN") %}
+                            <a href="{{ path('profile_edit', {'id': profile.id}) }}" class="links">edit</a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
             {% else %}
                 <tr>
                     <td colspan="7">no records found</td>

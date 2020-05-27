@@ -31,10 +31,6 @@
                                     <input type="checkbox" name="subscribers[{{ user.id }}]" id="profile_edit_subscribers_{{ user.id }}"
                                            class="form-check-input"
                                            value="{{ user.id }}"
-
-{#                                            {% if user in subscriptions.user %}#}
-{#                                                checked#}
-{#                                            {% endif %}#}
                                     >
                                     <label for="profile_edit_subscribers_{{ user.id }}" class="form-check-label">{{ user.username }}</label>
                                 </div>

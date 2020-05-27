@@ -14,12 +14,15 @@
                     <div class="form-group">
                         <a href="{{ path('user_index') }}" class="form-control btn btn-square">Back to list</a>
                     </div>
+                    {% if is_granted('ROLE_ADMIN') %}
                     <div class="form-group">
                         <a href="{{ path('user_edit', {'id': user.id}) }}" class="form-control w70 btn btn-square">Edit</a>
                     </div>
+
                     <div class="form-group">
                         {{ include('user/_delete_form.html.twig') }}
                     </div>
+                    {% endif %}
                     <div class="form-group">
                         <button type="button" class="btn btn-square" data-toggle="modal" data-target="#exampleModal">
                             Change password

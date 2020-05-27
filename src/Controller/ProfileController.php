@@ -15,11 +15,13 @@ use App\Repository\UserRepository;
 use App\Security\FileNotExistsException;
 use App\Security\FileNotMoveableException;
 use App\Service\ProfileCreateService;
+use Exception;
 use Ramsey\Uuid\Uuid;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Form\Extension\Core\Type\SubmitType;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -28,23 +30,55 @@ class ProfileController extends AbstractController
 {
     /**
      * @Route("/", name="profile_index", methods={"GET"})
+     * @param ProfileRepository $profileRepository
+     * @param SubscriptionRepository $subscriptionRepository
+     * @return Response
      */
     public function index(ProfileRepository $profileRepository, SubscriptionRepository $subscriptionRepository): Response
     {
-        $profile = $profileRepository->findAll();
-        if (in_array(User::ROLE_ADMIN, $this->getUser()->getRoles())) {
-            // Get all profiles regarless
-            $profiles = $profileRepository->findBy(['forAll' => true]);
+
+       $profiles = array();
+
+        if (in_array(User::ROLE_USER, $this->getUser()->getRoles())) {
+            // Get all profiles regardless
+            $publicProfiles = $profileRepository->findBy(['forAll' => true]);
+            $allSubscription = $subscriptionRepository->findBy(['user' => $this->getUser()]);
+//            dump($allSubscription);
+//            dump('-----');
+//            dump($publicProfiles);
+//            die();
+            // Get the ones that user is subscribed to
+            $subscribedProfiles = [];
+            foreach ($allSubscription as $oneSub) {
+                $profile = $oneSub->getProfile();
+                if (!in_array($profile, $subscribedProfiles))
+                    $subscribedProfiles[] = $oneSub->getProfile();
+            }
+
+            $profiles = array_merge(
+                $publicProfiles, $subscribedProfiles
+            );
         }
 
+        if (in_array(User::ROLE_ADMIN, $this->getUser()->getRoles())) {
+            $profiles = $profileRepository->findAll();
+        }
+
+//        dump($profiles);
+//        die();
+
         return $this->render('profile/index.html.twig', [
-            'profiles' => $profile
+            'profiles' => $profiles
         ]);
     }
+
 
     /**
      * @Route("/profile/new", name="profile_new", methods={"GET","POST"})
      * @IsGranted("ROLE_ADMIN")
+     * @param Request $request
+     * @param ProfileCreateService $service
+     * @return RedirectResponse|Response
      */
     public function new_profile(
         Request $request,
@@ -70,7 +104,7 @@ class ProfileController extends AbstractController
                 $this->addFlash("error", $ex);
             } catch (FileNotMoveableException $ex) {
                 $this->addFlash("error", $ex);
-            } catch (\Exception $ex) {
+            } catch (Exception $ex) {
                 $this->addFlash("error", $ex);
             }
 
@@ -88,6 +122,10 @@ class ProfileController extends AbstractController
 
     /**
      * @Route("/profile/{id}", name="profile_show", methods={"GET", "POST"})
+     * @param Request $request
+     * @param Profile $profile
+     * @param SubscriptionRepository $subscriptionRepository
+     * @return Response
      */
     public function show(Request $request, Profile $profile, SubscriptionRepository $subscriptionRepository): Response
     {
@@ -95,14 +133,12 @@ class ProfileController extends AbstractController
         {
             // If its a user
             // profile has to be for all
-            // profile has to be subcribed to the user
+            // profile has to be subscribed to the user
             if (!$profile->isforAll()) {
-                dump('Is for all is false');
-                die();
                 $subscription = $subscriptionRepository->findSubscribeProfile($this->getUser(), $profile);
                 if (!$subscription) {
                     $this->addFlash('error', 'You do not have access to see this profile');
-                    return $this->redirectToRoute('profile_idex');
+                    return $this->redirectToRoute('profile_index');
                 }
             }
         }
@@ -116,14 +152,14 @@ class ProfileController extends AbstractController
             $file = $profile->getFile();
 
             if($form->getClickedButton() && 'attemptToSave' === $form->getClickedButton()->getName()) {
-                // Check if somebody else could alreay have dibs on the file
+                // Check if somebody else could already have dibs on the file
                 if (!is_null($file->getAttemptToChangeBy())) {
-                    $this->addFlash("error", "Somebody else made their changes and presaved this file");
+                    $this->addFlash("error", "Somebody else made their changes and pre-saved this file");
                 } else {
                     $file->setAttemptToChangeBy($this->getUser());
                     $this->getDoctrine()->getManager()->persist($file);
                     $this->getDoctrine()->getManager()->flush();
-                    $this->addFlash("success", "First part went successfuly");
+                    $this->addFlash("success", "First part went successfully");
                 }
             }
             if($form->getClickedButton() && 'save' === $form->getClickedButton()->getName()) {
@@ -131,7 +167,7 @@ class ProfileController extends AbstractController
                     $this->addFlash("error", "Nobody yet to attempt to upload for this profile.");
                 else {
                     if ($this->getUser() !== $file->getAttemptToChangeBy())
-                        $this->addFlash("error", "This profile is being updated by " . $file_attempt->getUsername() . ' .');
+                        $this->addFlash("error", "This profile is being updated by " . $file->getAttemptToChangeBy()->getUsername() . ' .');
                     else {
                         // Replace
 
@@ -161,7 +197,7 @@ class ProfileController extends AbstractController
                                 // Return success message
                                 $this->addFlash('success', 'File was uploaded');
                             }
-                            catch (\Exception $e)
+                            catch (Exception $e)
                             {
                                 $this->addFlash('error', $e);
                             }
@@ -181,6 +217,12 @@ class ProfileController extends AbstractController
     /**
      * @Route("/profile/{id}/edit", name="profile_edit", methods={"GET","POST"})
      * @IsGranted("ROLE_ADMIN")
+     * @param Request $request
+     * @param Profile $profile
+     * @param UserRepository $userRepository
+     * @param SubscriptionRepository $subscriptionRepository
+     * @return Response
+     * @throws Exception
      */
     public function edit(
         Request $request,
@@ -237,18 +279,22 @@ class ProfileController extends AbstractController
 
     /**
      * @Route("/profile/{id}/download", name="profile_download")
+     * @param Profile $profile
+     * @param SubscriptionRepository $subscriptionRepository
+     * @return BinaryFileResponse|RedirectResponse
+     * @throws Exception
      */
     public function download(Profile $profile, SubscriptionRepository $subscriptionRepository)
     {
         if (in_array(User::ROLE_USER, $this->getUser()->getRoles())) {
             // If its a user
             // profile has to be for all
-            // profile has to be subcribed to the user
+            // profile has to be subscribed to the user
             if (!$profile->isforAll()) {
                 $subscription = $subscriptionRepository->findSubscribeProfile($this->getUser(), $profile);
                 if (!$subscription) {
                     $this->addFlash('error', 'You do not have access to see this profile');
-                    return $this->redirectToRoute('profile_idex');
+                    return $this->redirectToRoute('profile_index');
                 }
             }
         }
@@ -272,6 +318,9 @@ class ProfileController extends AbstractController
     /**
      * @Route("/profile/{id}", name="profile_delete", methods={"DELETE"})
      * @IsGranted("ROLE_ADMIN")
+     * @param Request $request
+     * @param Profile $profile
+     * @return Response
      */
     public function delete(Request $request, Profile $profile): Response
     {
@@ -301,15 +350,14 @@ class ProfileController extends AbstractController
                 // Remove the main profile
                 $entityManager->remove($profile);
 
-                // Finish everyting
+                // Finish everything
                 $entityManager->flush();
                 $this->addFlash("success", "Profile was successfully removed");
-            } catch (\Exception $e)
+            } catch (Exception $e)
             {
                 $this->addFlash("error", $e);
-            } finally {
-                return $this->redirectToRoute('profile_index');
             }
         }
+        return $this->redirectToRoute('profile_index');
     }
 }
